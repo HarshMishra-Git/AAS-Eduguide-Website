@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AAS Eduguide - Expert guidance for medical admissions NEET UG/PG, DNB, INI-CET" />
+    <meta name="keywords" content="NEET, medical admission, counselling, education, India" />
+    <meta name="author" content="AAS Eduguide Pvt. Ltd." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="AAS Eduguide - Medical Admission Counselling" />
+    <meta property="og:description" content="Expert guidance for medical admissions - NEET UG/PG, DNB, INI-CET" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>AAS Eduguide - Medical Admission Counselling</title>
+    <script>
+      // Performance monitoring
+      if ('performance' in window && 'PerformanceObserver' in window) {
+        const observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (entry.entryType === 'largest-contentful-paint') {
+              console.log('LCP:', entry.startTime);
+            }
+          }
+        });
+        observer.observe({entryTypes: ['largest-contentful-paint']});
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
