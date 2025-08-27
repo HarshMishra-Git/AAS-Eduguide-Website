@@ -24,11 +24,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const sql = neon(process.env.DATABASE_URL!);
       
-      const [leads, contacts, newsletters] = await Promise.all([
-        sql`SELECT * FROM leads ORDER BY created_at DESC LIMIT 50`,
-        sql`SELECT * FROM contacts ORDER BY created_at DESC LIMIT 50`,
-        sql`SELECT * FROM newsletters ORDER BY subscribed_at DESC LIMIT 50`
-      ]);
+      let leads = [], contacts = [], newsletters = [];
+      
+      try {
+        leads = await sql`SELECT * FROM leads ORDER BY created_at DESC LIMIT 50`;
+      } catch (e) {
+        console.log('Leads table not found or empty');
+        leads = [];
+      }
+      
+      try {
+        contacts = await sql`SELECT * FROM contacts ORDER BY created_at DESC LIMIT 50`;
+      } catch (e) {
+        console.log('Contacts table not found or empty');
+        contacts = [];
+      }
+      
+      try {
+        newsletters = await sql`SELECT * FROM newsletters ORDER BY subscribed_at DESC LIMIT 50`;
+      } catch (e) {
+        console.log('Newsletters table not found or empty');
+        newsletters = [];
+      }
 
       const html = `
 <!DOCTYPE html>
@@ -177,7 +194,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.setHeader('Content-Type', 'text/html');
       res.send(html);
     } catch (error) {
-      res.status(500).send('<h1>Error loading dashboard</h1>');
+      console.error('Dashboard error:', error);
+      res.status(500).send(`<h1>Error loading dashboard</h1><p>${error.message}</p>`);
     }
   } else {
     res.status(405).json({ message: 'Method not allowed' });
