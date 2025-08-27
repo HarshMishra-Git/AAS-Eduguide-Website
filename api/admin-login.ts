@@ -5,6 +5,32 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || "$2b$12$FrhHWFzmcYacalhnT2gUyeCyLuAS8xJzs55ajyudyVrRVak6XLBhu";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Parse form data for POST requests
+  if (req.method === 'POST' && req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', async () => {
+      const params = new URLSearchParams(body);
+      const username = params.get('username');
+      const password = params.get('password');
+      
+      console.log('Login attempt:', username, password ? 'password provided' : 'no password');
+      console.log('Expected username:', ADMIN_USERNAME);
+      
+      if (username === ADMIN_USERNAME && password && await bcrypt.compare(password, ADMIN_PASSWORD_HASH)) {
+        res.setHeader('Set-Cookie', 'admin=true; HttpOnly; Path=/; Max-Age=86400');
+        res.writeHead(302, { Location: '/api/admin-dashboard' });
+        res.end();
+      } else {
+        res.writeHead(302, { Location: '/api/admin-login?error=1' });
+        res.end();
+      }
+    });
+    return;
+  }
+  
   if (req.method === 'GET') {
     const html = `
 <!DOCTYPE html>
@@ -52,16 +78,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 </html>`;
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
-  } else if (req.method === 'POST') {
-    const { username, password } = req.body;
-    
-    if (username === ADMIN_USERNAME && await bcrypt.compare(password, ADMIN_PASSWORD_HASH)) {
-      res.setHeader('Set-Cookie', 'admin=true; HttpOnly; Path=/; Max-Age=86400');
-      res.redirect(302, '/api/admin-dashboard');
-    } else {
-      res.redirect(302, '/api/admin-login?error=1');
-    }
-  } else {
-    res.status(405).json({ message: 'Method not allowed' });
-  }
+
 }
