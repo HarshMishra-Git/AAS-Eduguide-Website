@@ -325,7 +325,7 @@ export default function Footer() {
           </div>
           
           <div className="text-center md:text-right text-gray-300">
-            <div className="mb-2" data-testid="text-copyright">© 2024 AAS Eduguide Pvt. Ltd. All rights reserved.</div>
+            <div className="mb-2" data-testid="text-copyright">© 2025 AAS Eduguide Pvt. Ltd. All rights reserved.</div>
             <div className="text-sm space-x-2">
               <button className="hover:text-brand-green transition-colors" data-testid="link-privacy">Privacy Policy</button>
               <span>•</span>

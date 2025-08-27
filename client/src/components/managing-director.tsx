@@ -55,7 +55,7 @@ export default function ManagingDirector() {
                 </DialogHeader>
                 <div className="space-y-4 text-gray-800 leading-relaxed mt-6">
                   <p>
-                    "When I started AAS Eduguide 15 years ago, my vision was simple yet ambitious: to ensure that no deserving student loses their chance at a medical career due to lack of proper guidance or misinformation."
+                    "When I started AAS Eduguide 14 years ago, my vision was simple yet ambitious: to ensure that no deserving student loses their chance at a medical career due to lack of proper guidance or misinformation."
                   </p>
                   <p>
                     "Having worked closely with the Medical Education Board, I witnessed firsthand how complex the admission process has become. The introduction of NEET, multiple quota systems, and varying state policies created a maze that even well-informed families struggle to navigate."
