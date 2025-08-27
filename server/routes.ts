@@ -134,6 +134,17 @@ export default async function handler(req: any, res: any) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   
+  // Simple CORS
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    next();
+  });
+  
   await setupRoutes(app);
   
   return app(req, res);
