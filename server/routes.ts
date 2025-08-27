@@ -128,6 +128,17 @@ const handleValidationErrors = (req: Request, res: Response, next: NextFunction)
   next();
 };
 
+// Export for Vercel serverless
+export default async function handler(req: any, res: any) {
+  const app = express();
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+  
+  await setupRoutes(app);
+  
+  return app(req, res);
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // HTTPS redirect in production only
   if (process.env.NODE_ENV === 'production') {
@@ -551,4 +562,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Move route setup to separate function
+async function setupRoutes(app: Express) {
+  // HTTPS redirect in production only
+  if (process.env.NODE_ENV === 'production') {
+    app.use(httpsRedirect);
+  }
+  
+  // Apply security middleware
+  app.use(securityMiddleware);
+  
+  // Apply rate limiting only in production
+  if (process.env.NODE_ENV === 'production') {
+    app.use('/api', rateLimiter);
+  }
+  
+  // Session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 
+    }
+  }));
+
+  // CSRF token endpoint
+  app.get("/api/csrf-token", (req, res) => {
+    const token = generateCSRFToken();
+    res.json({ csrfToken: token });
+  });
+
+  // Lead submission endpoint
+  app.post("/api/leads", validateLead, handleValidationErrors, async (req: Request, res: Response) => {
+    try {
+      const leadData = insertLeadSchema.parse(req.body);
+      const lead = await storage.createLead(leadData);
+      
+      console.log('New lead submission saved:', leadData.name, leadData.email);
+      
+      res.json({ success: true, lead });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid data provided",
+          errors: error.errors 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to create lead" 
+        });
+      }
+    }
+  });
+
+  // Get all leads
+  app.get("/api/leads", async (req, res) => {
+    try {
+      const leads = await storage.getLeads();
+      res.json(leads);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch leads" 
+      });
+    }
+  });
+
+  // Newsletter subscription endpoint
+  app.post("/api/newsletter", validateNewsletter, handleValidationErrors, async (req: Request, res: Response) => {
+    try {
+      const newsletterData = insertNewsletterSchema.parse(req.body);
+      const newsletter = await storage.subscribeNewsletter(newsletterData);
+      
+      console.log('New newsletter subscription saved:', newsletterData.email);
+      
+      res.json({ success: true, newsletter });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid email provided",
+          errors: error.errors 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to subscribe to newsletter" 
+        });
+      }
+    }
+  });
+
+  // Contact form submission endpoint
+  app.post("/api/contacts", validateContact, handleValidationErrors, async (req: Request, res: Response) => {
+    try {
+      console.log('Contact form submission received:', req.body);
+      
+      const contactData = insertContactSchema.parse(req.body);
+      console.log('Contact data validated:', contactData);
+      
+      const contact = await storage.createContact(contactData);
+      console.log('Contact saved successfully:', contact);
+      
+      console.log('New contact submission saved:', contactData.firstName, contactData.lastName, contactData.email);
+      
+      res.json({ success: true, contact });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      
+      if (error instanceof z.ZodError) {
+        console.error('Validation errors:', error.errors);
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid contact data provided",
+          errors: error.errors 
+        });
+      } else {
+        console.error('Database or other error:', (error as Error).message, (error as Error).stack);
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to create contact",
+          error: (error as Error).message 
+        });
+      }
+    }
+  });
+
+  // Get all contacts
+  app.get("/api/contacts", async (req, res) => {
+    try {
+      const contacts = await storage.getContacts();
+      res.json(contacts);
+    } catch (error) {
+      console.error('Failed to fetch contacts:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch contacts",
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  // Enhanced health check endpoint
+  app.get("/api/health", async (req, res) => {
+    const healthCheck = {
+      uptime: process.uptime(),
+      message: 'OK',
+      timestamp: Date.now(),
+      environment: process.env.NODE_ENV,
+      version: process.env.npm_package_version || '1.0.0',
+      database: 'disconnected',
+      memory: process.memoryUsage(),
+    };
+
+    try {
+      const contacts = await storage.getContacts();
+      healthCheck.database = 'connected';
+      res.json({ 
+        success: true,
+        ...healthCheck,
+        stats: {
+          contactCount: contacts.length
+        }
+      });
+    } catch (error) {
+      logger.error('Health check failed:', error);
+      res.status(503).json({ 
+        success: false,
+        ...healthCheck,
+        error: process.env.NODE_ENV === 'production' ? 'Service unavailable' : (error as Error).message
+      });
+    }
+  });
+
+  // Get newsletter subscriptions
+  app.get("/api/newsletters", async (req, res) => {
+    try {
+      const newsletters = await storage.getNewsletterSubscriptions();
+      res.json(newsletters);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch newsletter subscriptions" 
+      });
+    }
+  });
 }

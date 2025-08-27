@@ -3,15 +3,5 @@
     "server/index.ts": {
       "runtime": "nodejs18.x"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/server/index.ts"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/server/index.ts"
-    }
-  ]
+  }
 }
