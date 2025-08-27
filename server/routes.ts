@@ -128,27 +128,7 @@ const handleValidationErrors = (req: Request, res: Response, next: NextFunction)
   next();
 };
 
-// Export for Vercel serverless
-export default async function handler(req: any, res: any) {
-  const app = express();
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
-  
-  // Simple CORS
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    next();
-  });
-  
-  await setupRoutes(app);
-  
-  return app(req, res);
-}
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // HTTPS redirect in production only
