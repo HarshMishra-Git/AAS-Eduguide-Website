@@ -79,7 +79,7 @@ export default function Navigation() {
                 {item.label}
               </button>
             ))}
-            <Button 
+            {/* <Button 
               onClick={goToCareers}
               className="relative overflow-hidden bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 mr-3 font-medium transition-all duration-300 transform hover:scale-105 animate-pulse"
               data-testid="button-were-hiring"
@@ -89,7 +89,7 @@ export default function Navigation() {
                 <span>We're Hiring!</span>
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-            </Button>
+            </Button> */}
             <Button 
               className="btn-primary text-white px-6 py-2"
               onClick={() => scrollToSection("#contact")}

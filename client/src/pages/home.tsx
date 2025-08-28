@@ -22,8 +22,8 @@ export default function Home() {
         <main>
           <HeroSection />
           <CompanyOverview />
-          <HowWeWork />
           <ServicesSection />
+          <HowWeWork />
           <PGPackages />
           <UGPackages />
           <WhyChooseUs />

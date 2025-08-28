@@ -87,7 +87,7 @@ const services = [
 
 export default function ServicesSection() {
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section id="services" className="py-20 relative overflow-hidden">
       {/* Animated Medical Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50">
         {/* Floating Medical Icons */}

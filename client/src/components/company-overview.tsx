@@ -38,7 +38,7 @@ export default function CompanyOverview() {
             Trusted medical admissions counseling in India & Abroad
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up-delayed" data-testid="text-overview-description">
-            With over 13+ years of experience and a mission rooted in ethics and transparency, we provide data-driven counseling for medical admissions in India and abroad. We have guided 10 Lac+ students successfully.
+            With over 13+ years of experience and a mission rooted in ethics and transparency, we provide data-driven counseling for medical admissions in India and abroad. We have guided 2 Lac+ students successfully.
           </p>
         </div>
         
