@@ -59,7 +59,7 @@ export default function Contact() {
   };
 
   const openWhatsApp = () => {
-    window.open("https://api.whatsapp.com/send/?phone=%2B918565001261&text&type=phone_number&app_absent=0", "_blank");
+    window.open("https://api.whatsapp.com/send/?phone=%2B917752944476&text&type=phone_number&app_absent=0", "_blank");
   };
 
   return (
@@ -288,7 +288,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="font-semibold text-brand-navy">Phone</div>
-                    <div className="text-gray-600" data-testid="text-phone-number">+91-8565001261</div>
+                    <div className="text-gray-600" data-testid="text-phone-number">+91-7752944476</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -297,7 +297,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="font-semibold text-brand-navy">WhatsApp</div>
-                    <div className="text-gray-600" data-testid="text-whatsapp-number">+91-8565001261</div>
+                    <div className="text-gray-600" data-testid="text-whatsapp-number">+91-7752944476</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">

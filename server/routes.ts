@@ -94,10 +94,10 @@ const rateLimiter = rateLimit({
 
 // Validation middleware
 const validateLead = [
-  body('name').trim().isLength({ min: 2, max: 100 }).escape(),
+  body('name').trim().isLength({ min: 1, max: 100 }).escape(),
   body('email').isEmail().normalizeEmail(),
-  body('phone').isMobilePhone('any'),
-  body('exam').isIn(['neet-ug', 'neet-pg', 'dnb', 'ini-cet']),
+  body('phone').trim().isLength({ min: 1, max: 20 }),
+  body('exam').trim().isLength({ min: 1, max: 50 }).escape(),
   body('preferredState').optional().trim().isLength({ max: 50 }).escape(),
   body('message').optional().trim().isLength({ max: 500 }).escape(),
 ];

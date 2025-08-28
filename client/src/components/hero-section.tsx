@@ -174,7 +174,7 @@ export default function HeroSection() {
               </div>
               <div className="text-center lg:text-left">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-brand-navy leading-tight whitespace-nowrap" data-testid="text-hero-title">
-                  AAS Eduguide <span className="text-brand-green">Pvt. Ltd.</span>
+                  AAS EduGuide <span className="text-brand-green">Pvt. Ltd.</span>
                 </h1>
                 <p className="text-lg sm:text-xl md:text-2xl text-brand-green font-semibold">All Admission Services</p>
               </div>

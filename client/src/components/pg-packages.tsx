@@ -134,7 +134,7 @@ export default function PGPackages() {
           </p>
           <div className="mt-6 flex justify-center">
             <div className="text-xl sm:text-2xl font-bold text-brand-navy bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-4 sm:px-6 py-2 rounded-lg">
-              📞 +91-8565001261
+              📞 +91-7752944476
             </div>
           </div>
         </div>
