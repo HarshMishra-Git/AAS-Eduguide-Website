@@ -35,7 +35,7 @@ export default function CompanyOverview() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-brand-navy mb-6 animate-fade-in-up" data-testid="text-overview-title">
-            Trusted medical admissions counseling in India & Abroad
+            Trusted Medical Admissions Counseling in India & Abroad
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up-delayed" data-testid="text-overview-description">
             With over 13+ years of experience and a mission rooted in ethics and transparency, we provide data-driven counseling for medical admissions in India and abroad. We have guided 2 Lac+ students successfully.
