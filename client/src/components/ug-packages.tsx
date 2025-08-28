@@ -128,10 +128,10 @@ export default function UGPackages() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-brand-navy mb-6" data-testid="text-ug-packages-title">
-            OUR SERVICE PACKAGES FOR MBBS 2025-COUNSELLING
+            OUR SERVICE PACKAGES FOR NEET UG 2025-COUNSELLING
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-ug-packages-description">
-            Tailored packages for MBBS 2025 admissions with comprehensive support for undergraduate medical aspirants.
+            Tailored packages for NEET UG 2025 admissions with comprehensive support for undergraduate medical aspirants.
           </p>
         </div>
         
