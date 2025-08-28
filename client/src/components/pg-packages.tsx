@@ -114,6 +114,13 @@ function FeatureCell({ value }: { value: boolean | string }) {
 }
 
 export default function PGPackages() {
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="pg-packages" className="py-20 gradient-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -161,6 +168,7 @@ export default function PGPackages() {
               </ul>
               <Button 
                 className="btn-primary text-white w-full py-2 text-sm font-medium"
+                onClick={scrollToContact}
                 data-testid={`button-package-${index}`}
               >
                 {pkg.cta}

@@ -9,11 +9,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
+import { useLocation } from "wouter";
 // import logoUrl from "@assets/AASLOGO.png";
 
 export default function Footer() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location, navigate] = useLocation();
 
   const form = useForm<InsertNewsletter>({
     resolver: zodResolver(insertNewsletterSchema.extend({
@@ -48,7 +50,18 @@ export default function Footer() {
   };
 
   const scrollToSection = (sectionId: string) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+    if (location !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const goToCareers = () => {
+    navigate('/careers');
   };
 
   return (
@@ -228,6 +241,15 @@ export default function Footer() {
                   data-testid="link-blog-updates"
                 >
                   Blog & Updates
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={goToCareers}
+                  className="hover:text-brand-green transition-colors"
+                  data-testid="link-careers"
+                >
+                  Careers
                 </button>
               </li>
             </ul>

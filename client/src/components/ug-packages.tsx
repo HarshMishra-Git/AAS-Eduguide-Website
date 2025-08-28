@@ -116,6 +116,13 @@ function ComparisonCell({ value }: { value: boolean | string }) {
 }
 
 export default function UGPackages() {
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="ug-packages" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -178,6 +185,7 @@ export default function UGPackages() {
                 className={`w-full py-3 text-lg font-medium ${
                   pkg.recommended || pkg.premium ? "btn-primary text-white" : "btn-secondary text-white"
                 }`}
+                onClick={scrollToContact}
                 data-testid={`button-ug-package-${index}`}
               >
                 {pkg.cta}
