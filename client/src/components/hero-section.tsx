@@ -127,7 +127,7 @@ function MedicalGraphics() {
       {/* Success Stats Floating */}
       <div className="absolute top-12 right-12 animate-float">
         <GlassCard className="p-4 text-center">
-          <div className="text-2xl font-bold text-brand-green">10L+</div>
+          <div className="text-2xl font-bold text-brand-green">2L+</div>
           <div className="text-xs text-gray-600">Students</div>
         </GlassCard>
       </div>

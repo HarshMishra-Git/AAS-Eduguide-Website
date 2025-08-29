@@ -8,6 +8,7 @@ import UGPackages from "@/components/ug-packages";
 import WhyChooseUs from "@/components/why-choose-us";
 import DocumentChecklist from "@/components/document-checklist";
 import Testimonials from "@/components/testimonials";
+import Achievements from "@/components/achievements";
 import ManagingDirector from "@/components/managing-director";
 import Contact from "@/components/contact";
 import Footer from "@/components/footer";
@@ -30,6 +31,7 @@ export default function Home() {
           <WhyChooseUs />
           <DocumentChecklist />
           <Testimonials />
+          <Achievements />
           <ManagingDirector />
           <Contact />
         </main>

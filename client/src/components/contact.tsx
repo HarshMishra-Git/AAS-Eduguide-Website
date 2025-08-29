@@ -253,7 +253,7 @@ export default function Contact() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-brand-green rounded-full"></div>
-                      <span className="text-gray-700">10 Lac+ Students Guided</span>
+                      <span className="text-gray-700">2 Lac+ Students Guided</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-brand-green rounded-full"></div>
@@ -272,7 +272,7 @@ export default function Contact() {
                   <Clock className="w-4 h-4 text-brand-green" />
                   <span className="font-semibold text-brand-navy">Quick Response Guarantee</span>
                 </div>
-                <p>We'll get back to you within <span className="font-semibold text-brand-green">15 minutes</span> during office hours</p>
+                <p>We'll get back to you within <span className="font-semibold text-brand-green">2 Hours</span> during office hours</p>
               </div>
             </div>
           </GlassCard>
