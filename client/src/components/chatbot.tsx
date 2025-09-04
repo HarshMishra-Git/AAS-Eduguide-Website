@@ -48,7 +48,7 @@ const botResponses = {
 };
 
 export default function Chatbot() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [hasUserClosed, setHasUserClosed] = useState(false);
   
   const [messages, setMessages] = useState<Message[]>([
@@ -132,14 +132,7 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (!hasUserClosed) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasUserClosed]);
+  // Removed auto-open behavior - chatbot stays closed until user clicks
 
   const handleSendMessage = (text?: string) => {
     const messageText = text || inputValue.trim();

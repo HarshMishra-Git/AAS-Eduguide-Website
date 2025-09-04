@@ -288,7 +288,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="font-semibold text-brand-navy">Phone</div>
-                    <div className="text-gray-600" data-testid="text-phone-number">+91-7752944476</div>
+                    <a href="tel:+917752944476" className="text-gray-600 hover:text-brand-green transition-colors" data-testid="text-phone-number">+91-7752944476</a>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -348,7 +348,7 @@ export default function Contact() {
             {/* Interactive Map */}
             <GlassCard className="p-4">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3570.2847!2d80.3319!3d26.4499!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399c47d4542d4c7d%3A0x123456789!2s117%2FH-1%2F377%2C%20Pandu%20Nagar%2C%20near%20Agra%20Sweet%20House%2C%20Kakadeo%2C%20Kanpur%2C%20Uttar%20Pradesh%20208005!5e0!3m2!1sen!2sin!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3570.284747474747!2d80.295377!3d26.4759331!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399c380da2eadd97%3A0xc0883b44988329!2s117%2FH-1%2F377%2C%20Pandu%20Nagar%2C%20near%20Agra%20Sweet%20House%2C%20Kakadeo%2C%20Kanpur%2C%20Uttar%20Pradesh%20208005!5e0!3m2!1sen!2sin!4v1703123456789"
                 width="100%"
                 height="256"
                 style={{ border: 0, borderRadius: '8px' }}

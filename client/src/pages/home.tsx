@@ -14,6 +14,7 @@ import Contact from "@/components/contact";
 import Footer from "@/components/footer";
 import AnimatedBackground from "@/components/animated-background";
 import Chatbot from "@/components/chatbot";
+import FormIndicator from "@/components/form-indicator";
 
 export default function Home() {
   return (
@@ -37,6 +38,7 @@ export default function Home() {
         </main>
         <Footer />
         <Chatbot />
+        <FormIndicator />
       </div>
     </div>
   );

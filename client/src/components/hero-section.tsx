@@ -176,7 +176,7 @@ export default function HeroSection() {
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-brand-navy leading-tight whitespace-nowrap" data-testid="text-hero-title">
                   AAS EduGuide <span className="text-brand-green">Pvt. Ltd.</span>
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-brand-green font-semibold">All Admission Services</p>
+                <p className="text-lg sm:text-xl md:text-2xl text-brand-green font-semibold">"Your Career Is Our Concern"</p>
               </div>
             </div>
             
@@ -189,7 +189,7 @@ export default function HeroSection() {
               </h2>
               
               <p className="text-xl text-gray-600 leading-relaxed" data-testid="text-hero-description">
-                <span className="text-brand-green font-bold">"Your Career Is Our Concern"</span><br/>
+                {/* <span className="text-brand-green font-bold">"Your Career Is Our Concern"</span><br/> */}
                 Expert guidance for <span className="font-semibold text-brand-navy">NEET UG/PG, DNB, INI‑CET</span> with 13+ years of proven success.
               </p>
             </div>
