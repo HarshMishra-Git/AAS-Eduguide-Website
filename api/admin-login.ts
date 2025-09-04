@@ -78,5 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 </html>`;
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
-
+  } else {
+    res.status(405).json({ message: 'Method not allowed' });
+  }
 }

@@ -288,7 +288,11 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="font-semibold text-brand-navy">Phone</div>
-                    <a href="tel:+917752944476" className="text-gray-600 hover:text-brand-green transition-colors" data-testid="text-phone-number">+91-7752944476</a>
+                    <a href="tel:+917752944476" className="flex items-center space-x-2 text-brand-green hover:text-brand-navy transition-colors font-semibold bg-green-50 hover:bg-green-100 px-3 py-2 rounded-lg border border-green-200 hover:border-green-300" data-testid="text-phone-number">
+                      <Phone className="w-4 h-4" />
+                      <span>+91-7752944476</span>
+                      <span className="text-xs text-green-600">(Tap to call)</span>
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">

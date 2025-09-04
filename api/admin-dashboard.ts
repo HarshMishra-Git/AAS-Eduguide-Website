@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const sql = neon(process.env.DATABASE_URL!);
       
-      let leads = [], contacts = [], newsletters = [];
+      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [];
       
       try {
         leads = await sql`SELECT * FROM leads ORDER BY created_at DESC LIMIT 50`;
@@ -195,7 +195,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.send(html);
     } catch (error) {
       console.error('Dashboard error:', error);
-      res.status(500).send(`<h1>Error loading dashboard</h1><p>${error.message}</p>`);
+      res.status(500).send(`<h1>Error loading dashboard</h1><p>${error instanceof Error ? error.message : 'Unknown error'}</p>`);
     }
   } else {
     res.status(405).json({ message: 'Method not allowed' });

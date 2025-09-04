@@ -18,8 +18,22 @@ export default function FormIndicator() {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
-    setIsVisible(false);
+    // Don't hide - stays visible until form is submitted
   };
+
+  // Listen for form submission to hide the indicator
+  useEffect(() => {
+    const handleFormSubmit = () => {
+      setIsVisible(false);
+    };
+
+    // Listen for successful form submission
+    const contactForm = document.querySelector('form');
+    if (contactForm) {
+      contactForm.addEventListener('submit', handleFormSubmit);
+      return () => contactForm.removeEventListener('submit', handleFormSubmit);
+    }
+  }, []);
 
   const handleClose = () => {
     setIsVisible(false);
