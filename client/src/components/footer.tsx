@@ -349,9 +349,21 @@ export default function Footer() {
           <div className="text-center md:text-right text-gray-300">
             <div className="mb-2" data-testid="text-copyright">© 2025 AAS Eduguide Pvt. Ltd. All rights reserved.</div>
             <div className="text-sm space-x-2">
-              <button className="hover:text-brand-green transition-colors" data-testid="link-privacy">Privacy Policy</button>
+              <button 
+                onClick={() => navigate('/privacypolicy')}
+                className="hover:text-brand-green transition-colors" 
+                data-testid="link-privacy"
+              >
+                Privacy Policy
+              </button>
               <span>•</span>
-              <button className="hover:text-brand-green transition-colors" data-testid="link-terms">Terms of Service</button>
+              <button 
+                onClick={() => navigate('/terms')}
+                className="hover:text-brand-green transition-colors" 
+                data-testid="link-terms"
+              >
+                Terms of Service
+              </button>
               <span>•</span>
               <button className="hover:text-brand-green transition-colors" data-testid="link-cookies">Cookie Policy</button>
               <span>•</span>

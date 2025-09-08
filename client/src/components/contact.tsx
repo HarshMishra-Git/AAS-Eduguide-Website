@@ -11,22 +11,22 @@ import { insertContactSchema, type InsertContact } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
 
 export default function Contact() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   const form = useForm<InsertContact>({
     resolver: zodResolver(insertContactSchema.extend({
-      firstName: insertContactSchema.shape.firstName.min(2, "First name must be at least 2 characters"),
-      lastName: insertContactSchema.shape.lastName.min(2, "Last name must be at least 2 characters"),
+      fullName: insertContactSchema.shape.fullName.min(2, "Full name must be at least 2 characters"),
       email: insertContactSchema.shape.email.email("Please enter a valid email"),
       phone: insertContactSchema.shape.phone.min(10, "Phone number must be at least 10 digits"),
     })),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       phone: "",
       exam: "",
@@ -38,12 +38,10 @@ export default function Contact() {
   const createContactMutation = useMutation({
     mutationFn: (data: InsertContact) => apiRequest("POST", "/api/contacts", data),
     onSuccess: () => {
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us! We'll get back to you within 15 minutes.",
-      });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      // Redirect to thank you page
+      navigate('/thank-you');
     },
     onError: (error: any) => {
       toast({
@@ -80,42 +78,23 @@ export default function Contact() {
             <h3 className="text-2xl font-bold text-brand-navy mb-6" data-testid="text-form-title">Send us a message</h3>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            placeholder="First Name" 
-                            className="bg-white/80 backdrop-blur-sm"
-                            data-testid="input-first-name"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            placeholder="Last Name" 
-                            className="bg-white/80 backdrop-blur-sm"
-                            data-testid="input-last-name"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          placeholder="Full Name" 
+                          className="bg-white/80 backdrop-blur-sm"
+                          data-testid="input-full-name"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

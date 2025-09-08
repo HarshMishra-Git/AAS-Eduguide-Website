@@ -14,10 +14,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     try {
       const sql = neon(process.env.DATABASE_URL!);
-      const { firstName, lastName, email, phone, exam, preferredState, message } = req.body;
+      const { fullName, email, phone, exam, preferredState, message } = req.body;
       
       // Simple validation
-      if (!firstName || !lastName || !email || !phone || !exam) {
+      if (!fullName || !email || !phone || !exam) {
         return res.status(400).json({ 
           success: false, 
           message: "Missing required fields" 
@@ -26,8 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Insert into database
       const result = await sql`
-        INSERT INTO contacts (first_name, last_name, email, phone, exam, preferred_state, message)
-        VALUES (${firstName}, ${lastName}, ${email}, ${phone}, ${exam}, ${preferredState || ''}, ${message || ''})
+        INSERT INTO contacts (full_name, email, phone, exam, preferred_state, message)
+        VALUES (${fullName}, ${email}, ${phone}, ${exam}, ${preferredState || ''}, ${message || ''})
         RETURNING *
       `;
       

@@ -103,8 +103,7 @@ const validateLead = [
 ];
 
 const validateContact = [
-  body('firstName').trim().isLength({ min: 2, max: 50 }).escape(),
-  body('lastName').trim().isLength({ min: 2, max: 50 }).escape(),
+  body('fullName').trim().isLength({ min: 2, max: 100 }).escape(),
   body('email').isEmail().normalizeEmail(),
   body('phone').isMobilePhone('any'),
   body('exam').isIn(['neet-ug', 'neet-pg', 'dnb', 'ini-cet']),
@@ -236,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contact = await storage.createContact(contactData);
       console.log('Contact saved successfully:', contact);
       
-      console.log('New contact submission saved:', contactData.firstName, contactData.lastName, contactData.email);
+      console.log('New contact submission saved:', contactData.fullName, contactData.email);
       
       res.json({ success: true, contact });
     } catch (error) {
@@ -507,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 <tbody>
                     ${contacts.slice(0, 50).map(contact => `
                     <tr>
-                        <td>${sanitizeHtml(contact.firstName)} ${sanitizeHtml(contact.lastName)}</td>
+                        <td>${sanitizeHtml(contact.fullName)}</td>
                         <td>${sanitizeHtml(contact.email)}</td>
                         <td>${sanitizeHtml(contact.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(contact.exam)}</span></td>
@@ -662,7 +661,7 @@ async function setupRoutes(app: Express) {
       const contact = await storage.createContact(contactData);
       console.log('Contact saved successfully:', contact);
       
-      console.log('New contact submission saved:', contactData.firstName, contactData.lastName, contactData.email);
+      console.log('New contact submission saved:', contactData.fullName, contactData.email);
       
       res.json({ success: true, contact });
     } catch (error) {

@@ -29,8 +29,7 @@ export const newsletters = pgTable("newsletters", {
 
 export const contacts = pgTable("contacts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  fullName: text("full_name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
   exam: text("exam").notNull(),
