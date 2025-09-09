@@ -9,6 +9,7 @@ import CareersPage from "@/pages/careers";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 import ThankYouPage from "@/pages/thank-you";
+import BAMSAdmissionsPage from "@/pages/bams-admissions";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacypolicy" component={PrivacyPage} />
       <Route path="/thank-you" component={ThankYouPage} />
+      <Route path="/bams-admissions-in-up" component={BAMSAdmissionsPage} />
       <Route component={NotFound} />
     </Switch>
   );

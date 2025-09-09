@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Lead, type InsertLead, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, users, leads, newsletters, contacts } from "@shared/schema";
+import { type User, type InsertUser, type Lead, type InsertLead, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type BamsAdmission, type InsertBamsAdmission, users, leads, newsletters, contacts, bamsAdmissions } from "@shared/schema";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq, desc } from "drizzle-orm";
@@ -31,6 +31,10 @@ export interface IStorage {
   // Contact methods
   createContact(contact: InsertContact): Promise<Contact>;
   getContacts(): Promise<Contact[]>;
+  
+  // BAMS admission methods
+  createBamsAdmission(bamsAdmission: InsertBamsAdmission): Promise<BamsAdmission>;
+  getBamsAdmissions(): Promise<BamsAdmission[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -92,6 +96,21 @@ export class DatabaseStorage implements IStorage {
 
   async getContacts(): Promise<Contact[]> {
     return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+  }
+
+  async createBamsAdmission(insertBamsAdmission: InsertBamsAdmission): Promise<BamsAdmission> {
+    try {
+      const result = await db.insert(bamsAdmissions).values(insertBamsAdmission).returning();
+      logger.info('BAMS admission created successfully', { email: insertBamsAdmission.email });
+      return result[0];
+    } catch (error) {
+      logger.error('Failed to create BAMS admission', { error, data: insertBamsAdmission });
+      throw error;
+    }
+  }
+
+  async getBamsAdmissions(): Promise<BamsAdmission[]> {
+    return await db.select().from(bamsAdmissions).orderBy(desc(bamsAdmissions.createdAt));
   }
 }
 

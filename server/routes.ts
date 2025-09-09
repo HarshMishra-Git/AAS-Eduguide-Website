@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLeadSchema, insertNewsletterSchema, insertContactSchema } from "@shared/schema";
+import { insertLeadSchema, insertNewsletterSchema, insertContactSchema, insertBamsAdmissionSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -113,6 +113,16 @@ const validateContact = [
 
 const validateNewsletter = [
   body('email').isEmail().normalizeEmail(),
+];
+
+const validateBamsAdmission = [
+  body('fullName').trim().isLength({ min: 2, max: 100 }).escape(),
+  body('email').isEmail().normalizeEmail(),
+  body('phone').isMobilePhone('any'),
+  body('category').optional().isIn(['general', 'obc', 'sc', 'st']),
+  body('domicileState').optional().trim().isLength({ max: 50 }).escape(),
+  body('counselingType').optional().isIn(['state', 'aiq', 'deemed', 'private']),
+  body('message').optional().trim().isLength({ max: 500 }).escape(),
 ];
 
 const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
@@ -274,6 +284,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // BAMS admission submission endpoint
+  app.post("/api/bams-admissions", validateBamsAdmission, handleValidationErrors, async (req: Request, res: Response) => {
+    try {
+      console.log('BAMS admission request received:', req.body);
+      
+      const bamsData = insertBamsAdmissionSchema.parse(req.body);
+      console.log('BAMS admission data validated:', bamsData);
+      
+      const bamsAdmission = await storage.createBamsAdmission(bamsData);
+      console.log('BAMS admission saved successfully:', bamsAdmission);
+      
+      console.log('New BAMS admission saved:', bamsData.fullName, bamsData.email);
+      
+      res.json({ 
+        success: true, 
+        message: 'BAMS admission inquiry submitted successfully! Our experts will contact you within 15 minutes.',
+        id: bamsAdmission.id 
+      });
+    } catch (error) {
+      console.error('BAMS admission submission error:', error);
+      
+      if (error instanceof z.ZodError) {
+        console.error('BAMS validation errors:', error.errors);
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid BAMS admission data provided",
+          errors: error.errors 
+        });
+      } else {
+        console.error('BAMS database or other error:', (error as Error).message, (error as Error).stack);
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to submit BAMS admission inquiry",
+          error: (error as Error).message 
+        });
+      }
+    }
+  });
+
+  // Get all BAMS admissions
+  app.get("/api/bams-admissions", async (req, res) => {
+    try {
+      const bamsAdmissions = await storage.getBamsAdmissions();
+      res.json({ success: true, data: bamsAdmissions, count: bamsAdmissions.length });
+    } catch (error) {
+      console.error('Failed to fetch BAMS admissions:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch BAMS admissions",
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Enhanced health check endpoint
   app.get("/api/health", async (req, res) => {
     const healthCheck = {
@@ -394,10 +458,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.redirect('/admin/login');
     }
     try {
-      const [leads, contacts, newsletters] = await Promise.all([
+      const [leads, contacts, newsletters, bamsAdmissions] = await Promise.all([
         storage.getLeads(),
         storage.getContacts(),
-        storage.getNewsletterSubscriptions()
+        storage.getNewsletterSubscriptions(),
+        storage.getBamsAdmissions()
       ]);
 
       const html = `
@@ -452,6 +517,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             <div class="stat-card">
                 <div class="stat-number">${contacts.length}</div>
                 <div class="stat-label">Contact Forms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${bamsAdmissions.length}</div>
+                <div class="stat-label">BAMS Admissions</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${newsletters.length}</div>
@@ -517,6 +586,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 </tbody>
             </table>
             ` : '<div class="no-data">No contact submissions found</div>'}
+        </div>
+
+        <div class="section">
+            <div class="section-header">BAMS Admissions</div>
+            ${bamsAdmissions.length > 0 ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Category</th>
+                        <th>Counseling Type</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${bamsAdmissions.slice(0, 50).map(admission => `
+                    <tr>
+                        <td>${sanitizeHtml(admission.fullName)}</td>
+                        <td>${sanitizeHtml(admission.email)}</td>
+                        <td>${sanitizeHtml(admission.phone)}</td>
+                        <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
+                        <td><span class="badge badge-success">${sanitizeHtml(admission.counselingType)}</span></td>
+                        <td>${admission.createdAt ? new Date(admission.createdAt).toLocaleDateString() : '-'}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : '<div class="no-data">No BAMS admissions found</div>'}
         </div>
 
         <div class="section">

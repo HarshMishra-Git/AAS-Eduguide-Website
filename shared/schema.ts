@@ -38,6 +38,18 @@ export const contacts = pgTable("contacts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const bamsAdmissions = pgTable("bams_admissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  category: text("category").notNull().default("general"),
+  domicileState: text("domicile_state").notNull().default("uttar-pradesh"),
+  counselingType: text("counseling_type").notNull().default("state"),
+  message: text("message"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -58,6 +70,12 @@ export const insertContactSchema = createInsertSchema(contacts).omit({
   createdAt: true,
 });
 
+export const insertBamsAdmissionSchema = createInsertSchema(bamsAdmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
@@ -66,3 +84,5 @@ export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
 export type Newsletter = typeof newsletters.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
+export type InsertBamsAdmission = z.infer<typeof insertBamsAdmissionSchema>;
+export type BamsAdmission = typeof bamsAdmissions.$inferSelect;

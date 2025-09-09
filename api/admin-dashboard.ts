@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const sql = neon(process.env.DATABASE_URL!);
       
-      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [];
+      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [], bamsAdmissions: any[] = [];
       
       try {
         leads = await sql`SELECT * FROM leads ORDER BY created_at DESC LIMIT 50`;
@@ -45,6 +45,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       } catch (e) {
         console.log('Newsletters table not found or empty');
         newsletters = [];
+      }
+      
+      try {
+        bamsAdmissions = await sql`SELECT * FROM bams_admissions ORDER BY created_at DESC LIMIT 50`;
+      } catch (e) {
+        console.log('BAMS admissions table not found or empty');
+        bamsAdmissions = [];
       }
 
       const html = `
@@ -101,6 +108,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <div class="stat-label">Contact Forms</div>
             </div>
             <div class="stat-card">
+                <div class="stat-number">${bamsAdmissions.length}</div>
+                <div class="stat-label">BAMS Admissions</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-number">${newsletters.length}</div>
                 <div class="stat-label">Newsletter Subscribers</div>
             </div>
@@ -153,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <tbody>
                     ${contacts.map(contact => `
                     <tr>
-                        <td>${sanitizeHtml(contact.first_name)} ${sanitizeHtml(contact.last_name)}</td>
+                        <td>${sanitizeHtml(contact.full_name)}</td>
                         <td>${sanitizeHtml(contact.email)}</td>
                         <td>${sanitizeHtml(contact.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(contact.exam)}</span></td>
@@ -164,6 +175,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </tbody>
             </table>
             ` : '<div class="no-data">No contact submissions found</div>'}
+        </div>
+
+        <div class="section">
+            <div class="section-header">BAMS Admissions</div>
+            ${bamsAdmissions.length > 0 ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                         <th>Name</th>
+                         <th>Email</th>
+                         <th>Phone</th>
+                         <th>Category</th>
+                         <th>Counseling Type</th>
+                         <th>Date</th>
+                     </tr>
+                </thead>
+                <tbody>
+                    ${bamsAdmissions.map(admission => `
+                     <tr>
+                         <td>${sanitizeHtml(admission.full_name)}</td>
+                         <td>${sanitizeHtml(admission.email)}</td>
+                         <td>${sanitizeHtml(admission.phone)}</td>
+                         <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
+                         <td><span class="badge badge-success">${sanitizeHtml(admission.counseling_type)}</span></td>
+                         <td>${admission.created_at ? new Date(admission.created_at).toLocaleDateString() : '-'}</td>
+                     </tr>
+                     `).join('')}
+                </tbody>
+            </table>
+            ` : '<div class="no-data">No BAMS admissions found</div>'}
         </div>
 
         <div class="section">

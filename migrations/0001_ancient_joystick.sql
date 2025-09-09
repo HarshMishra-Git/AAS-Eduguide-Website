@@ -1,0 +1,20 @@
+CREATE TABLE "bams_admissions" (
+	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"full_name" text NOT NULL,
+	"email" text NOT NULL,
+	"phone" text NOT NULL,
+	"neet_score" integer,
+	"neet_rank" integer,
+	"category" text DEFAULT 'general' NOT NULL,
+	"domicile_state" text DEFAULT 'uttar-pradesh' NOT NULL,
+	"preferred_colleges" text,
+	"budget_range" text,
+	"counseling_type" text DEFAULT 'state' NOT NULL,
+	"previous_education" text,
+	"message" text,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"assigned_counselor" text,
+	"follow_up_date" timestamp,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now()
+);
