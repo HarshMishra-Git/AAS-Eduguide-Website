@@ -122,6 +122,14 @@ export default function Chatbot() {
   };
 
   const scrollToContact = () => {
+    // Check if we're on BAMS page first
+    const bamsContactForm = document.getElementById('contact-form');
+    if (bamsContactForm) {
+      bamsContactForm.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    
+    // Fallback to home page contact section
     const contactSection = document.getElementById('contact');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });

@@ -128,8 +128,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Get recent BAMS admissions (for admin purposes)
       const admissions = await sql`
         SELECT 
-          id, full_name, email, phone, neet_score, neet_rank, 
-          category, domicile_state, status, created_at
+          id, full_name, email, phone, 
+          category, domicile_state, counseling_type, message, created_at
         FROM bams_admissions 
         ORDER BY created_at DESC 
         LIMIT 50

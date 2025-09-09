@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Navigation from "@/components/navigation";
+import BAMSNavigation from "@/components/bams-navigation";
 import Footer from "@/components/footer";
 import AnimatedBackground from "@/components/animated-background";
 import { useState } from "react";
@@ -212,16 +212,26 @@ export default function BAMSAdmissionsPage() {
     <div className="min-h-screen bg-gray-50 relative">
       <AnimatedBackground />
       <div className="relative z-10">
-        <Navigation />
+        <BAMSNavigation />
         
         {/* Hero Section with Contact Form */}
         <section className="py-20 lg:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Hero Content */}
-              <div className="text-center lg:text-left">
+              {/* Contact Form - Prominent Display - Shows first on mobile */}
+              <div className="animate-fade-up order-1 lg:order-2" style={{animationDelay: '0.8s'}} id="contact-form">
+                <GlassCard className="p-8">
+                  <h2 className="text-2xl font-bold text-brand-navy mb-6 text-center">
+                    Get Free BAMS Counseling
+                  </h2>
+                  <BAMSContactForm />
+                </GlassCard>
+              </div>
+
+              {/* Hero Content - Shows second on mobile */}
+              <div className="text-center lg:text-left order-2 lg:order-1">
                 <h1 className="text-4xl md:text-6xl font-bold text-brand-navy mb-6 animate-fade-up">
-                  BAMS Admissions in UP
+                  Get BAMS Admissions in Top Colleges in UP
                   <span className="block text-brand-green">Secure Your Future</span>
                 </h1>
                 <p className="text-xl text-gray-600 mb-8 leading-relaxed animate-fade-up" style={{animationDelay: '0.2s'}}>
@@ -267,16 +277,6 @@ export default function BAMSAdmissionsPage() {
                   </Button>
                 </div>
               </div>
-
-              {/* Contact Form - Prominent Display */}
-              <div className="animate-fade-up" style={{animationDelay: '0.8s'}} id="contact-form">
-                <GlassCard className="p-8">
-                  <h2 className="text-2xl font-bold text-brand-navy mb-6 text-center">
-                    Get Free BAMS Counseling
-                  </h2>
-                  <BAMSContactForm />
-                </GlassCard>
-              </div>
             </div>
           </div>
         </section>
@@ -303,7 +303,7 @@ export default function BAMSAdmissionsPage() {
         </section>
 
         {/* BAMS Overview */}
-        <section className="py-20">
+        <section className="py-20" id="bams-info">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-brand-navy mb-6">
