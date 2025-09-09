@@ -215,7 +215,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
           
           try {
-            const response = await fetch(`/api/admin-dashboard?table=${table}&id=${id}`, {
+            const response = await fetch('/api/admin-dashboard?table=' + table + '&id=' + id, {
               method: 'DELETE'
             });
             
@@ -236,7 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         async function exportData(table) {
           try {
-            const response = await fetch(`/api/admin-dashboard?action=export&table=${table}`, {
+            const response = await fetch('/api/admin-dashboard?action=export&table=' + table, {
               method: 'POST'
             });
             
@@ -245,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `${table}_export_${new Date().toISOString().split('T')[0]}.csv`;
+              a.download = table + '_export_' + new Date().toISOString().split('T')[0] + '.csv';
               document.body.appendChild(a);
               a.click();
               window.URL.revokeObjectURL(url);
