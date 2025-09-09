@@ -18,7 +18,7 @@ function validatePhone(phone: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log('BAMS API called:', req.method, req.url);
+  console.log('BAMS API called:', req.method, req.url, 'Fixed schema mismatch');
   
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
