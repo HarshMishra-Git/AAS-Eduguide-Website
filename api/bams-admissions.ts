@@ -18,7 +18,7 @@ function validatePhone(phone: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log('BAMS API called:', req.method, req.url, 'Fixed schema mismatch');
+  console.log('BAMS API called:', req.method, req.url, 'Production Debug v2');
   
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,9 +32,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
+      // Check environment variables
+      if (!process.env.DATABASE_URL) {
+        console.error('DATABASE_URL environment variable is missing');
+        return res.status(500).json({
+          success: false,
+          message: 'Database configuration error',
+          error: 'DATABASE_URL not configured'
+        });
+      }
+      
+      console.log('Database URL exists, length:', process.env.DATABASE_URL.length);
+      
       const sql = neon(process.env.DATABASE_URL!);
       
-      console.log('BAMS admission request received:', req.body);
+      console.log('BAMS admission request received:', JSON.stringify(req.body, null, 2));
+      console.log('Request headers:', JSON.stringify(req.headers, null, 2));
       
       // Validate request body
       const validatedData = insertBamsAdmissionSchema.parse(req.body);
@@ -69,6 +82,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
       
       // Insert into database
+      console.log('About to insert data:', JSON.stringify(sanitizedData, null, 2));
+      console.log('SQL query will use columns: full_name, email, phone, category, domicile_state, counseling_type, message');
+      
       const result = await sql`
         INSERT INTO bams_admissions (
           full_name, email, phone, category, domicile_state, counseling_type, message
@@ -82,7 +98,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ${sanitizedData.message}
         )
         RETURNING id
-      `;}]}}}
+      `;
+      
+      console.log('Database insertion successful, result:', result);}]}}}
       
       console.log('BAMS admission created:', {
         id: result[0]?.id,
