@@ -35,6 +35,9 @@ export interface IStorage {
   // BAMS admission methods
   createBamsAdmission(bamsAdmission: InsertBamsAdmission): Promise<BamsAdmission>;
   getBamsAdmissions(): Promise<BamsAdmission[]>;
+  
+  // Delete methods
+  deleteRecord(table: string, id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -111,6 +114,34 @@ export class DatabaseStorage implements IStorage {
 
   async getBamsAdmissions(): Promise<BamsAdmission[]> {
     return await db.select().from(bamsAdmissions).orderBy(desc(bamsAdmissions.createdAt));
+  }
+
+  async deleteRecord(table: string, id: string): Promise<void> {
+    try {
+      switch (table) {
+        case 'leads':
+          await db.delete(leads).where(eq(leads.id, id));
+          logger.info('Lead deleted successfully', { id });
+          break;
+        case 'contacts':
+          await db.delete(contacts).where(eq(contacts.id, id));
+          logger.info('Contact deleted successfully', { id });
+          break;
+        case 'bams_admissions':
+          await db.delete(bamsAdmissions).where(eq(bamsAdmissions.id, id));
+          logger.info('BAMS admission deleted successfully', { id });
+          break;
+        case 'newsletters':
+          await db.delete(newsletters).where(eq(newsletters.id, id));
+          logger.info('Newsletter subscription deleted successfully', { id });
+          break;
+        default:
+          throw new Error(`Invalid table: ${table}`);
+      }
+    } catch (error) {
+      logger.error('Failed to delete record', { error, table, id });
+      throw error;
+    }
   }
 }
 
