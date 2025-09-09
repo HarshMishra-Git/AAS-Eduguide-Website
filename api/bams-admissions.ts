@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
 import { insertBamsAdmissionSchema } from '@shared/schema';
 import { z } from 'zod';
+import { storage } from '../server/storage';
 
 function sanitizeInput(input: string): string {
   return input.trim().replace(/[<>"'&]/g, '');
@@ -32,22 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     try {
-      // Check environment variables
-      if (!process.env.DATABASE_URL) {
-        console.error('DATABASE_URL environment variable is missing');
-        return res.status(500).json({
-          success: false,
-          message: 'Database configuration error',
-          error: 'DATABASE_URL not configured'
-        });
-      }
-      
-      console.log('Database URL exists, length:', process.env.DATABASE_URL.length);
-      
-      const sql = neon(process.env.DATABASE_URL!);
-      
       console.log('BAMS admission request received:', JSON.stringify(req.body, null, 2));
-      console.log('Request headers:', JSON.stringify(req.headers, null, 2));
       
       // Validate request body
       const validatedData = insertBamsAdmissionSchema.parse(req.body);
@@ -69,51 +54,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       
-      // Sanitize inputs
-      const sanitizedData = {
-        ...validatedData,
-        fullName: sanitizeInput(validatedData.fullName),
-        email: sanitizeInput(validatedData.email.toLowerCase()),
-        phone: sanitizeInput(validatedData.phone),
-        category: sanitizeInput(validatedData.category || 'general'),
-        domicileState: sanitizeInput(validatedData.domicileState || 'uttar-pradesh'),
-        counselingType: sanitizeInput(validatedData.counselingType || 'state'),
-        message: validatedData.message ? sanitizeInput(validatedData.message) : null
-      };
+      // Use storage layer (same as development server)
+      const bamsAdmission = await storage.createBamsAdmission(validatedData);
       
-      // Insert into database
-      console.log('About to insert data:', JSON.stringify(sanitizedData, null, 2));
-      console.log('SQL query will use columns: full_name, email, phone, category, domicile_state, counseling_type, message');
-      
-      const result = await sql`
-        INSERT INTO bams_admissions (
-          full_name, email, phone, category, domicile_state, counseling_type, message
-        ) VALUES (
-          ${sanitizedData.fullName},
-          ${sanitizedData.email},
-          ${sanitizedData.phone},
-          ${sanitizedData.category},
-          ${sanitizedData.domicileState},
-          ${sanitizedData.counselingType},
-          ${sanitizedData.message}
-        )
-        RETURNING id
-      `;
-      
-      console.log('Database insertion successful, result:', result);}]}}}
-      
-      console.log('BAMS admission created:', {
-        id: result[0]?.id,
-        name: sanitizedData.fullName,
-        email: sanitizedData.email,
-        phone: sanitizedData.phone,
-        timestamp: new Date().toISOString()
-      });
+      console.log('BAMS admission created successfully:', bamsAdmission);
       
       res.status(201).json({
         success: true,
         message: 'BAMS admission inquiry submitted successfully! Our experts will contact you within 15 minutes.',
-        id: result[0]?.id
+        id: bamsAdmission.id
       });
       
     } catch (error) {
@@ -141,21 +90,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } else if (req.method === 'GET') {
     try {
-      const sql = neon(process.env.DATABASE_URL!);
-      
       // Get recent BAMS admissions (for admin purposes)
-      const admissions = await sql`
-        SELECT 
-          id, full_name, email, phone, 
-          category, domicile_state, counseling_type, message, created_at
-        FROM bams_admissions 
-        ORDER BY created_at DESC 
-        LIMIT 50
-      `;
+      const admissions = await storage.getBamsAdmissions();
       
       res.status(200).json({
         success: true,
-        data: admissions,
+        data: admissions.slice(0, 50), // Limit to 50 for consistency
         count: admissions.length
       });
       
