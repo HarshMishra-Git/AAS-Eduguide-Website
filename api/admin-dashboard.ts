@@ -184,6 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .btn-success:hover { background: #218838; }
         .export-section { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .export-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .recent-blogs { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
     </style>
     <script>
         async function deleteRecord(table, id, rowElement) {
@@ -280,12 +281,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         </div>
         
         <div style="text-align: center; margin: 40px 0;">
-            <a href="/admin/blog-manager" class="btn btn-primary">📝 Manage Blog Posts</a>
-            <a href="/admin/data" class="btn btn-secondary">📊 View All Data</a>
+            <a href="/api/blog-manager" class="btn btn-primary">📝 Manage Blog Posts</a>
+            <a href="/api/admin-data" class="btn btn-secondary">📊 View All Data</a>
         </div>
         
         <div class="section">
-            <div class="section-header">Blog Posts</div>
+            <div class="section-header">Recent Blog Posts</div>
             ${blogs.length > 0 ? `
             <table class="table">
                 <thead>
@@ -434,6 +435,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </tbody>
             </table>
             ` : '<div class="no-data">No newsletter subscribers found</div>'}
+        </div>
+        
+        <div class="recent-blogs">
+            <h3>Recent Blog Posts</h3>
+            ${blogs.slice(0, 5).map(blog => `
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <strong>${sanitizeHtml(blog.title)}</strong>
+                    <span style="background: ${blog.status === 'published' ? '#d4edda' : '#fff3cd'}; color: ${blog.status === 'published' ? '#155724' : '#856404'}; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;">${blog.status}</span>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">${new Date(blog.created_at).toLocaleDateString()}</div>
+                </div>
+            `).join('')}
         </div>
     </div>
 </body>
