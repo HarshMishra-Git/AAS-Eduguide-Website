@@ -65,6 +65,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <a href="/api/admin-dashboard" class="btn btn-secondary">← Back to Dashboard</a>
                 <a href="/api/admin-logout" class="btn btn-danger">Logout</a>
             </div>
+            <div>
+                <button class="btn btn-success" onclick="createNewBlog()">➕ New Blog Post</button>
+            </div>
         </div>
         
         ${blogs.length > 0 ? blogs.map(blog => `
@@ -82,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </div>
                 <div style="margin-top: 15px;">
                     <a href="/blog/${blog.slug}" class="btn btn-primary" target="_blank">👁️ View</a>
-                    <button class="btn btn-success" onclick="alert('Edit functionality requires full admin panel')">✏️ Edit</button>
+                    <button class="btn btn-success" onclick="editBlog('${blog.id}')">✏️ Edit</button>
                     <button class="btn btn-danger" onclick="deleteBlog('${blog.id}', this.parentElement.parentElement)">🗑️ Delete</button>
                 </div>
             </div>
@@ -111,6 +114,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } catch (error) {
                 alert('Error deleting blog: ' + error.message);
             }
+        }
+        
+        function editBlog(id) {
+            // Simple edit functionality - redirect to edit form
+            window.location.href = '/api/blog-editor?id=' + id;
+        }
+        
+        function createNewBlog() {
+            // Create new blog functionality
+            window.location.href = '/api/blog-editor';
         }
     </script>
 </body>

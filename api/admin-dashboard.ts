@@ -285,167 +285,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             <a href="/api/admin-data" class="btn btn-secondary">📊 View All Data</a>
         </div>
         
-        <div class="section">
-            <div class="section-header">Recent Blog Posts</div>
-            ${blogs.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Updated</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${blogs.map(blog => `
-                    <tr id="blog-${blog.id}">
-                        <td>${sanitizeHtml(blog.title)}</td>
-                        <td><span class="badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}">${blog.status}</span></td>
-                        <td>${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : '-'}</td>
-                        <td>${blog.updated_at ? new Date(blog.updated_at).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn-danger" onclick="deleteRecord('blogs', '${blog.id}', document.getElementById('blog-${blog.id}'))">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No blog posts found</div>'}
-        </div>
-        
-        <div class="section">
-            <div class="section-header">Recent Leads</div>
-            ${leads.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Exam</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${leads.map(lead => `
-                    <tr id="lead-${lead.id}">
-                        <td>${sanitizeHtml(lead.name)}</td>
-                        <td>${sanitizeHtml(lead.email)}</td>
-                        <td>${sanitizeHtml(lead.phone)}</td>
-                        <td><span class="badge badge-success">${sanitizeHtml(lead.exam)}</span></td>
-                        <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-${lead.id}'))">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No leads found</div>'}
-        </div>
 
-        <div class="section">
-            <div class="section-header">Contact Form Submissions</div>
-            ${contacts.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Exam</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${contacts.map(contact => `
-                    <tr id="contact-${contact.id}">
-                        <td>${sanitizeHtml(contact.full_name)}</td>
-                        <td>${sanitizeHtml(contact.email)}</td>
-                        <td>${sanitizeHtml(contact.phone)}</td>
-                        <td><span class="badge badge-success">${sanitizeHtml(contact.exam)}</span></td>
-                        <td>${contact.created_at ? new Date(contact.created_at).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn-danger" onclick="deleteRecord('contacts', '${contact.id}', document.getElementById('contact-${contact.id}'))">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No contact submissions found</div>'}
-        </div>
-
-        <div class="section">
-            <div class="section-header">BAMS Admissions</div>
-            ${bamsAdmissions.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${bamsAdmissions.map(admission => `
-                    <tr id="bams-${admission.id}">
-                        <td>${sanitizeHtml(admission.full_name)}</td>
-                        <td>${sanitizeHtml(admission.email)}</td>
-                        <td>${sanitizeHtml(admission.phone)}</td>
-                        <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
-                        <td>${admission.created_at ? new Date(admission.created_at).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn-danger" onclick="deleteRecord('bams_admissions', '${admission.id}', document.getElementById('bams-${admission.id}'))">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No BAMS admissions found</div>'}
-        </div>
-
-        <div class="section">
-            <div class="section-header">Newsletter Subscribers</div>
-            ${newsletters.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Subscribed Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${newsletters.map(newsletter => `
-                    <tr id="newsletter-${newsletter.id}">
-                        <td>${sanitizeHtml(newsletter.email)}</td>
-                        <td>${newsletter.subscribed_at ? new Date(newsletter.subscribed_at).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn-danger" onclick="deleteRecord('newsletters', '${newsletter.id}', document.getElementById('newsletter-${newsletter.id}'))">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No newsletter subscribers found</div>'}
-        </div>
         
         <div class="recent-blogs">
             <h3>Recent Blog Posts</h3>
-            ${blogs.slice(0, 5).map(blog => `
+            ${blogs.length > 0 ? blogs.slice(0, 5).map(blog => `
                 <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
                     <strong>${sanitizeHtml(blog.title)}</strong>
                     <span style="background: ${blog.status === 'published' ? '#d4edda' : '#fff3cd'}; color: ${blog.status === 'published' ? '#155724' : '#856404'}; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;">${blog.status}</span>
                     <div style="font-size: 12px; color: #666; margin-top: 5px;">${new Date(blog.created_at).toLocaleDateString()}</div>
                 </div>
-            `).join('')}
+            `).join('') : '<div style="padding: 20px; text-align: center; color: #666;">No blog posts found</div>'}
         </div>
     </div>
 </body>

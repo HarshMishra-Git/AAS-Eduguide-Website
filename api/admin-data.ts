@@ -77,9 +77,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.9rem; }
         .btn-primary { background: #007bff; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
-        .btn-success { background: #28a745; color: white; }
+        .btn-success { background: #28a745; color: white; text-decoration: none; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-danger:hover { background: #c82333; }
+        .section-header div { display: flex; gap: 10px; }
     </style>
     <script>
         async function deleteRecord(table, id, rowElement) {
@@ -292,7 +293,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         <div class="section">
             <div class="section-header">
                 <span>📝 Blog Posts (${blogs.length})</span>
-                <a href="/api/blog-manager" class="btn btn-success">Manage Blogs</a>
+                <div>
+                    <a href="/api/blog-editor" class="btn btn-success">➕ New Blog</a>
+                    <a href="/api/blog-manager" class="btn btn-success">Manage Blogs</a>
+                </div>
             </div>
             ${blogs.length > 0 ? `
             <table class="table">
@@ -310,15 +314,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <tbody>
                     ${blogs.map(blog => `
                     <tr id="blog-${blog.id}">
-                        <td>${sanitizeHtml(blog.title)}</td>
-                        <td>${sanitizeHtml(blog.slug)}</td>
+                        <td><strong>${sanitizeHtml(blog.title)}</strong></td>
+                        <td><code>${sanitizeHtml(blog.slug)}</code></td>
                         <td><span class="badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}">${blog.status.toUpperCase()}</span></td>
                         <td>${blog.tags ? sanitizeHtml(blog.tags) : '-'}</td>
                         <td>${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : '-'}</td>
                         <td>${blog.updated_at ? new Date(blog.updated_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <a href="/blog/${blog.slug}" class="btn btn-primary" target="_blank">👁️</a>
-                            <button class="btn btn-danger" onclick="deleteRecord('blogs', '${blog.id}', document.getElementById('blog-${blog.id}'))">🗑️</button>
+                            <a href="/blog/${blog.slug}" class="btn btn-primary" target="_blank" title="View">👁️</a>
+                            <a href="/api/blog-editor?id=${blog.id}" class="btn btn-success" title="Edit">✏️</a>
+                            <button class="btn btn-danger" onclick="deleteRecord('blogs', '${blog.id}', document.getElementById('blog-${blog.id}'))" title="Delete">🗑️</button>
                         </td>
                     </tr>
                     `).join('')}
