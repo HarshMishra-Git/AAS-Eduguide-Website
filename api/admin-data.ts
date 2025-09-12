@@ -56,6 +56,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         blogs = [];
       }
 
+      // Detect duplicates for highlighting
+      const detectDuplicates = (data: any[], emailField: string, phoneField: string) => {
+        const emailCounts: Record<string, number> = {};
+        const phoneCounts: Record<string, number> = {};
+        
+        data.forEach(item => {
+          const email = item[emailField];
+          const phone = item[phoneField];
+          if (email) emailCounts[email] = (emailCounts[email] || 0) + 1;
+          if (phone) phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+        });
+        
+        return data.map(item => ({
+          ...item,
+          isDuplicate: (emailCounts[item[emailField]] > 1) || (phoneCounts[item[phoneField]] > 1)
+        }));
+      };
+
+      leads = detectDuplicates(leads, 'email', 'phone');
+      contacts = detectDuplicates(contacts, 'email', 'phone');
+      bamsAdmissions = detectDuplicates(bamsAdmissions, 'email', 'phone');
+      newsletters = detectDuplicates(newsletters, 'email', 'email');
+
       const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -80,6 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .btn-success { background: #28a745; color: white; text-decoration: none; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-danger:hover { background: #c82333; }
+        .duplicate-row { background-color: #fff3cd !important; border-left: 4px solid #ffc107; }
+        .duplicate-row:hover { background-color: #ffeaa7 !important; }
         .section-header div { display: flex; gap: 10px; }
     </style>
     <script>
@@ -166,8 +191,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </thead>
                 <tbody>
                     ${leads.map(lead => `
-                    <tr id="lead-${lead.id}">
-                        <td>${sanitizeHtml(lead.name)}</td>
+                    <tr id="lead-${lead.id}" ${lead.isDuplicate ? 'class="duplicate-row"' : ''}>
+                        <td>${sanitizeHtml(lead.name)} ${lead.isDuplicate ? '⚠️' : ''}</td>
                         <td>${sanitizeHtml(lead.email)}</td>
                         <td>${sanitizeHtml(lead.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(lead.exam)}</span></td>
@@ -204,8 +229,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </thead>
                 <tbody>
                     ${contacts.map(contact => `
-                    <tr id="contact-${contact.id}">
-                        <td>${sanitizeHtml(contact.full_name)}</td>
+                    <tr id="contact-${contact.id}" ${contact.isDuplicate ? 'class="duplicate-row"' : ''}>
+                        <td>${sanitizeHtml(contact.full_name)} ${contact.isDuplicate ? '⚠️' : ''}</td>
                         <td>${sanitizeHtml(contact.email)}</td>
                         <td>${sanitizeHtml(contact.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(contact.exam)}</span></td>
@@ -243,8 +268,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </thead>
                 <tbody>
                     ${bamsAdmissions.map(admission => `
-                    <tr id="bams-${admission.id}">
-                        <td>${sanitizeHtml(admission.full_name)}</td>
+                    <tr id="bams-${admission.id}" ${admission.isDuplicate ? 'class="duplicate-row"' : ''}>
+                        <td>${sanitizeHtml(admission.full_name)} ${admission.isDuplicate ? '⚠️' : ''}</td>
                         <td>${sanitizeHtml(admission.email)}</td>
                         <td>${sanitizeHtml(admission.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
@@ -277,8 +302,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </thead>
                 <tbody>
                     ${newsletters.map(newsletter => `
-                    <tr id="newsletter-${newsletter.id}">
-                        <td>${sanitizeHtml(newsletter.email)}</td>
+                    <tr id="newsletter-${newsletter.id}" ${newsletter.isDuplicate ? 'class="duplicate-row"' : ''}>
+                        <td>${sanitizeHtml(newsletter.email)} ${newsletter.isDuplicate ? '⚠️' : ''}</td>
                         <td>${newsletter.subscribed_at ? new Date(newsletter.subscribed_at).toLocaleDateString() : '-'}</td>
                         <td>
                             <button class="btn btn-danger" onclick="deleteRecord('newsletters', '${newsletter.id}', document.getElementById('newsletter-${newsletter.id}'))">🗑️</button>
