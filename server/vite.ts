@@ -4,6 +4,7 @@ import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import url from "url";
+import { validatePath } from "./security";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,11 @@ export async function setupVite(app: Express, server: Server) {
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
+    // Validate URL to prevent path traversal
+    if (url.includes('..') || url.includes('~')) {
+      return res.status(400).send('Invalid path');
+    }
+
     try {
       const clientTemplate = path.resolve(
         __dirname,
@@ -52,6 +58,12 @@ export async function setupVite(app: Express, server: Server) {
         "client",
         "index.html",
       );
+
+      // Ensure the resolved path is within expected directory
+      const basePath = path.resolve(__dirname, "..", "client");
+      if (!clientTemplate.startsWith(basePath)) {
+        return res.status(400).send('Invalid path');
+      }
 
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       const page = await vite.transformIndexHtml(url, template);
@@ -75,6 +87,11 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   app.use("*", (req, res) => {
+    // Validate request path
+    if (req.path.includes('..') || req.path.includes('~')) {
+      return res.status(400).send('Invalid path');
+    }
+
     const safePath = path.resolve(distPath, "index.html");
     if (!safePath.startsWith(distPath)) {
       return res.status(404).send('Not found');

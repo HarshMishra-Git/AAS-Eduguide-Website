@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Lead, type InsertLead, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type BamsAdmission, type InsertBamsAdmission, users, leads, newsletters, contacts, bamsAdmissions } from "@shared/schema";
+import { type User, type InsertUser, type Lead, type InsertLead, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type BamsAdmission, type InsertBamsAdmission, type Blog, type InsertBlog, users, leads, newsletters, contacts, bamsAdmissions, blogs } from "@shared/schema";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq, desc } from "drizzle-orm";
@@ -35,6 +35,13 @@ export interface IStorage {
   // BAMS admission methods
   createBamsAdmission(bamsAdmission: InsertBamsAdmission): Promise<BamsAdmission>;
   getBamsAdmissions(): Promise<BamsAdmission[]>;
+  
+  // Blog methods
+  createBlog(blog: InsertBlog): Promise<Blog>;
+  getBlogs(): Promise<Blog[]>;
+  getBlogBySlug(slug: string): Promise<Blog | undefined>;
+  updateBlog(id: string, blog: Partial<InsertBlog>): Promise<Blog>;
+  deleteBlog(id: string): Promise<void>;
   
   // Delete methods
   deleteRecord(table: string, id: string): Promise<void>;
@@ -116,6 +123,51 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(bamsAdmissions).orderBy(desc(bamsAdmissions.createdAt));
   }
 
+  async createBlog(insertBlog: InsertBlog): Promise<Blog> {
+    try {
+      const result = await db.insert(blogs).values(insertBlog).returning();
+      logger.info('Blog created successfully', { title: insertBlog.title });
+      return result[0];
+    } catch (error) {
+      logger.error('Failed to create blog', { error, data: insertBlog });
+      throw error;
+    }
+  }
+
+  async getBlogs(): Promise<Blog[]> {
+    return await db.select().from(blogs).orderBy(desc(blogs.createdAt));
+  }
+
+  async getBlogBySlug(slug: string): Promise<Blog | undefined> {
+    const result = await db.select().from(blogs).where(eq(blogs.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async updateBlog(id: string, updateBlog: Partial<InsertBlog>): Promise<Blog> {
+    try {
+      const now = new Date();
+      const result = await db.update(blogs).set({ 
+        ...updateBlog, 
+        updatedAt: now 
+      }).where(eq(blogs.id, id)).returning();
+      logger.info('Blog updated successfully', { id, updatedAt: now });
+      return result[0];
+    } catch (error) {
+      logger.error('Failed to update blog', { error, id });
+      throw error;
+    }
+  }
+
+  async deleteBlog(id: string): Promise<void> {
+    try {
+      await db.delete(blogs).where(eq(blogs.id, id));
+      logger.info('Blog deleted successfully', { id });
+    } catch (error) {
+      logger.error('Failed to delete blog', { error, id });
+      throw error;
+    }
+  }
+
   async deleteRecord(table: string, id: string): Promise<void> {
     try {
       switch (table) {
@@ -134,6 +186,10 @@ export class DatabaseStorage implements IStorage {
         case 'newsletters':
           await db.delete(newsletters).where(eq(newsletters.id, id));
           logger.info('Newsletter subscription deleted successfully', { id });
+          break;
+        case 'blogs':
+          await db.delete(blogs).where(eq(blogs.id, id));
+          logger.info('Blog deleted successfully', { id });
           break;
         default:
           throw new Error(`Invalid table: ${table}`);

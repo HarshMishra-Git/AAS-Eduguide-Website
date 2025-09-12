@@ -2,13 +2,45 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
+import compression from "compression";
+import { registerRoutes } from "./routes-secure";
 import { setupVite, serveStatic, log } from "./vite";
 import { logger } from "./logger";
+import { sanitizeForLog, generateCSRFToken } from "./security";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Security middleware - disabled in development
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: false,
+  }));
+}
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://yourdomain.com'] 
+    : ['http://localhost:5173', 'http://localhost:5000'],
+  credentials: true
+}));
+
+app.use(compression());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', limiter);
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -48,12 +80,11 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     logger.error('Server error:', {
-      error: err.message,
-      stack: err.stack,
-      url: req.url,
+      error: sanitizeForLog(err.message),
+      url: sanitizeForLog(req.url),
       method: req.method,
-      ip: req.ip,
-      userAgent: req.get('User-Agent')
+      ip: sanitizeForLog(req.ip),
+      userAgent: sanitizeForLog(req.get('User-Agent'))
     });
 
     res.status(status).json({ 

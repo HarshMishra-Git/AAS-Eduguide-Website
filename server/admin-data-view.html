@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Data - AAS Eduguide Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #1a365d; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .section { background: white; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .section-header { background: #7cb342; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .table th { background: #f8f9fa; font-weight: bold; }
+        .table tr:hover { background: #f8f9fa; }
+        .btn { padding: 8px 16px; margin: 2px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 12px; }
+        .btn-primary { background: #7cb342; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-export { background: #17a2b8; color: white; }
+        .status-published { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .status-draft { background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .empty-state { text-align: center; padding: 40px; color: #666; }
+        .duplicate-email { background-color: #fff3cd !important; }
+        .duplicate-phone { background-color: #f8d7da !important; }
+        .duplicate-both { background-color: #d1ecf1 !important; }
+        .duplicate-indicator { font-size: 10px; padding: 2px 4px; border-radius: 3px; margin-left: 5px; }
+        .dup-email { background: #ffc107; color: #212529; }
+        .dup-phone { background: #dc3545; color: white; }
+        .dup-both { background: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>All Data View</h1>
+                <p>Complete database records for AAS Eduguide</p>
+            </div>
+            <div>
+                <a href="/admin" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="/admin/logout" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+
+        <div id="dataContainer">
+            <div class="empty-state">Loading data...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const [leadsRes, contactsRes, newslettersRes, bamsRes, blogsRes] = await Promise.all([
+                    fetch('/api/leads'),
+                    fetch('/api/contacts'),
+                    fetch('/api/newsletters'),
+                    fetch('/api/bams-admissions'),
+                    fetch('/admin/blogs')
+                ]);
+
+                const leads = await leadsRes.json();
+                const contacts = await contactsRes.json();
+                const newsletters = await newslettersRes.json();
+                const bamsAdmissions = await bamsRes.json();
+                const blogsData = await blogsRes.json();
+                const blogs = blogsData.blogs || [];
+
+                renderData(leads, contacts, newsletters, bamsAdmissions.data || bamsAdmissions, blogs);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('dataContainer').innerHTML = '<div class="empty-state">Error loading data</div>';
+            }
+        }
+
+        function renderData(leads, contacts, newsletters, bamsAdmissions, blogs) {
+            // Detect duplicates across all data
+            const duplicates = detectDuplicates(leads, contacts, bamsAdmissions);
+            
+            const container = document.getElementById('dataContainer');
+            
+            container.innerHTML = `
+                <!-- Leads Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>📋 Leads (${leads.length})</h3>
+                        <button class="btn btn-export" onclick="exportData('leads')">📥 Export CSV</button>
+                    </div>
+                    ${renderLeadsTable(leads, duplicates)}
+                </div>
+
+                <!-- Contacts Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>📞 Contact Forms (${contacts.length})</h3>
+                        <button class="btn btn-export" onclick="exportData('contacts')">📥 Export CSV</button>
+                    </div>
+                    ${renderContactsTable(contacts, duplicates)}
+                </div>
+
+                <!-- BAMS Admissions Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>🏥 BAMS Admissions (${bamsAdmissions.length})</h3>
+                        <button class="btn btn-export" onclick="exportData('bams_admissions')">📥 Export CSV</button>
+                    </div>
+                    ${renderBamsTable(bamsAdmissions, duplicates)}
+                </div>
+
+                <!-- Newsletter Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>📧 Newsletter Subscribers (${newsletters.length})</h3>
+                        <button class="btn btn-export" onclick="exportData('newsletters')">📥 Export CSV</button>
+                    </div>
+                    ${renderNewslettersTable(newsletters)}
+                </div>
+
+                <!-- Blogs Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>📝 Blog Posts (${blogs.length})</h3>
+                        <a href="/admin/blog-manager" class="btn btn-primary">Manage Blogs</a>
+                    </div>
+                    ${renderBlogsTable(blogs)}
+                </div>
+            `;
+        }
+
+        function renderLeadsTable(leads, duplicates) {
+            if (leads.length === 0) return '<div class="empty-state">No leads found</div>';
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Exam</th>
+                            <th>State</th>
+                            <th>Source</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${leads.map(lead => {
+                            const dupInfo = getDuplicateInfo(lead.email, lead.phone, duplicates);
+                            return `
+                        <tr class="${dupInfo.rowClass}">
+                            <td>${escapeHtml(lead.name)}</td>
+                            <td>${escapeHtml(lead.email)}${dupInfo.emailIndicator}</td>
+                            <td>${escapeHtml(lead.phone)}${dupInfo.phoneIndicator}</td>
+                            <td>${escapeHtml(lead.exam)}</td>
+                            <td>${escapeHtml(lead.preferredState || 'N/A')}</td>
+                            <td>${escapeHtml(lead.source)}</td>
+                            <td>${new Date(lead.createdAt).toLocaleDateString()}</td>
+                            <td><button class="btn btn-danger" onclick="deleteRecord('leads', '${lead.id}')">🗑️</button></td>
+                        </tr>
+                        `}).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderContactsTable(contacts, duplicates) {
+            if (contacts.length === 0) return '<div class="empty-state">No contact forms found</div>';
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Exam</th>
+                            <th>State</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${contacts.map(contact => {
+                            const dupInfo = getDuplicateInfo(contact.email, contact.phone, duplicates);
+                            return `
+                        <tr class="${dupInfo.rowClass}">
+                            <td>${escapeHtml(contact.fullName)}</td>
+                            <td>${escapeHtml(contact.email)}${dupInfo.emailIndicator}</td>
+                            <td>${escapeHtml(contact.phone)}${dupInfo.phoneIndicator}</td>
+                            <td>${escapeHtml(contact.exam)}</td>
+                            <td>${escapeHtml(contact.preferredState || 'N/A')}</td>
+                            <td>${escapeHtml((contact.message || '').substring(0, 50))}${contact.message && contact.message.length > 50 ? '...' : ''}</td>
+                            <td>${new Date(contact.createdAt).toLocaleDateString()}</td>
+                            <td><button class="btn btn-danger" onclick="deleteRecord('contacts', '${contact.id}')">🗑️</button></td>
+                        </tr>
+                        `}).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderBamsTable(bamsAdmissions, duplicates) {
+            if (bamsAdmissions.length === 0) return '<div class="empty-state">No BAMS admissions found</div>';
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Category</th>
+                            <th>State</th>
+                            <th>Counseling</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bamsAdmissions.map(bams => {
+                            const dupInfo = getDuplicateInfo(bams.email, bams.phone, duplicates);
+                            return `
+                        <tr class="${dupInfo.rowClass}">
+                            <td>${escapeHtml(bams.fullName)}</td>
+                            <td>${escapeHtml(bams.email)}${dupInfo.emailIndicator}</td>
+                            <td>${escapeHtml(bams.phone)}${dupInfo.phoneIndicator}</td>
+                            <td>${escapeHtml(bams.category)}</td>
+                            <td>${escapeHtml(bams.domicileState)}</td>
+                            <td>${escapeHtml(bams.counselingType)}</td>
+                            <td>${new Date(bams.createdAt).toLocaleDateString()}</td>
+                            <td><button class="btn btn-danger" onclick="deleteRecord('bams_admissions', '${bams.id}')">🗑️</button></td>
+                        </tr>
+                        `}).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderNewslettersTable(newsletters) {
+            if (newsletters.length === 0) return '<div class="empty-state">No newsletter subscribers found</div>';
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Subscribed Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${newsletters.map(newsletter => `
+                        <tr>
+                            <td>${escapeHtml(newsletter.email)}</td>
+                            <td>${new Date(newsletter.subscribedAt).toLocaleDateString()}</td>
+                            <td><button class="btn btn-danger" onclick="deleteRecord('newsletters', '${newsletter.id}')">🗑️</button></td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderBlogsTable(blogs) {
+            if (blogs.length === 0) return '<div class="empty-state">No blog posts found</div>';
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Status</th>
+                            <th>Tags</th>
+                            <th>Created</th>
+                            <th>Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${blogs.map(blog => `
+                        <tr>
+                            <td>${escapeHtml(blog.title)}</td>
+                            <td>${escapeHtml(blog.slug)}</td>
+                            <td><span class="status-${blog.status}">${blog.status.toUpperCase()}</span></td>
+                            <td>${escapeHtml(blog.tags || 'N/A')}</td>
+                            <td>${new Date(blog.createdAt).toLocaleDateString()}</td>
+                            <td>${new Date(blog.updatedAt).toLocaleDateString()}</td>
+                            <td>
+                                ${blog.status === 'published' ? `<a href="/blog/${blog.slug}" target="_blank" class="btn btn-secondary">👁️</a>` : ''}
+                                <button class="btn btn-danger" onclick="deleteRecord('blogs', '${blog.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function deleteRecord(table, id) {
+            if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/delete?table=${table}&id=${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Record deleted successfully!');
+                    loadData();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Error deleting record. Please try again.');
+            }
+        }
+        
+        async function exportData(table) {
+            try {
+                const response = await fetch(`/admin/export?table=${table}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${table}_export.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const result = await response.json();
+                    alert('Export failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting data. Please try again.');
+            }
+        }
+
+        function detectDuplicates(leads, contacts, bamsAdmissions) {
+            const emailCounts = {};
+            const phoneCounts = {};
+            
+            // Count occurrences across all tables
+            [...leads, ...contacts, ...bamsAdmissions].forEach(record => {
+                const email = record.email || record.email;
+                const phone = record.phone || record.phone;
+                
+                if (email) {
+                    emailCounts[email] = (emailCounts[email] || 0) + 1;
+                }
+                if (phone) {
+                    phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+                }
+            });
+            
+            return { emailCounts, phoneCounts };
+        }
+        
+        function getDuplicateInfo(email, phone, duplicates) {
+            const emailDup = duplicates.emailCounts[email] > 1;
+            const phoneDup = duplicates.phoneCounts[phone] > 1;
+            
+            let rowClass = '';
+            let emailIndicator = '';
+            let phoneIndicator = '';
+            
+            if (emailDup && phoneDup) {
+                rowClass = 'duplicate-both';
+                emailIndicator = '<span class="duplicate-indicator dup-both">DUP</span>';
+                phoneIndicator = '<span class="duplicate-indicator dup-both">DUP</span>';
+            } else if (emailDup) {
+                rowClass = 'duplicate-email';
+                emailIndicator = '<span class="duplicate-indicator dup-email">DUP</span>';
+            } else if (phoneDup) {
+                rowClass = 'duplicate-phone';
+                phoneIndicator = '<span class="duplicate-indicator dup-phone">DUP</span>';
+            }
+            
+            return { rowClass, emailIndicator, phoneIndicator };
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

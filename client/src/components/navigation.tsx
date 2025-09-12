@@ -14,7 +14,7 @@ const navItems = [
   { href: "#ug-packages", label: "UG Packages" },
   { href: "#documents", label: "Documents" },
   { href: "#testimonials", label: "Testimonials" },
-  // { href: "#director", label: "MD" },
+  { href: "/blogs", label: "Blog", external: true },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -34,6 +34,12 @@ export default function Navigation() {
   );
 
   const scrollToSection = (href: string) => {
+    if (href.startsWith('/')) {
+      navigate(href);
+      setIsOpen(false);
+      return;
+    }
+    
     if (location !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -79,7 +85,7 @@ export default function Navigation() {
                 key={item.href}
                 onClick={() => scrollToSection(item.href)}
                 className={`nav-link px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeSection === item.href.substring(1) ? "active" : ""
+                  item.href.startsWith('/') ? (location === item.href ? "active" : "") : (activeSection === item.href.substring(1) ? "active" : "")
                 }`}
                 data-testid={`nav-${item.href.substring(1)}`}
               >
@@ -114,9 +120,11 @@ export default function Navigation() {
                     key={item.href}
                     onClick={() => scrollToSection(item.href)}
                     className={`nav-link px-4 py-3 rounded-lg text-base font-medium transition-all text-left border border-transparent hover:border-gray-200 hover:bg-gray-50 ${
-                      activeSection === item.href.substring(1) 
-                        ? "active bg-green-50 border-brand-green text-brand-green" 
-                        : "text-brand-navy hover:text-brand-green"
+                      item.href.startsWith('/') 
+                        ? (location === item.href ? "active bg-green-50 border-brand-green text-brand-green" : "text-brand-navy hover:text-brand-green")
+                        : (activeSection === item.href.substring(1) 
+                          ? "active bg-green-50 border-brand-green text-brand-green" 
+                          : "text-brand-navy hover:text-brand-green")
                     }`}
                     data-testid={`mobile-nav-${item.href.substring(1)}`}
                   >

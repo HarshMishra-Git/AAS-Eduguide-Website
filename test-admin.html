@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Login</title>
+</head>
+<body>
+    <h1>Test Admin Login</h1>
+    <p>Username: AAS@EduGuide</p>
+    <p>Password: admin123</p>
+    
+    <form action="http://localhost:5000/admin/login" method="POST">
+        <input type="text" name="username" value="AAS@EduGuide" readonly><br><br>
+        <input type="password" name="password" value="admin123" readonly><br><br>
+        <button type="submit">Login to Admin</button>
+    </form>
+    
+    <br><br>
+    <a href="http://localhost:5000/admin" target="_blank">Go to Admin Dashboard</a><br>
+    <a href="http://localhost:5000/admin/data" target="_blank">Go to Admin Data View</a>
+</body>
+</html>

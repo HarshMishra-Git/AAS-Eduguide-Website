@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog Manager - AAS Eduguide Admin</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #1a365d; color: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #7cb342; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card-header { padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; }
+        .card-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .form-control:focus { outline: none; border-color: #7cb342; }
+        textarea.form-control { min-height: 100px; resize: vertical; }
+        .blog-list { display: grid; gap: 20px; }
+        .blog-item { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
+        .blog-meta { display: flex; justify-content: between; align-items: center; margin-bottom: 10px; }
+        .blog-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-published { background: #d4edda; color: #155724; }
+        .status-draft { background: #fff3cd; color: #856404; }
+        .blog-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 0; width: 90%; max-width: 800px; border-radius: 8px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { opacity: 0.7; }
+        .hidden { display: none; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Blog Manager</h1>
+                <p>Manage blog posts for AAS Eduguide</p>
+            </div>
+            <div>
+                <a href="/admin" class="btn btn-secondary">← Back to Dashboard</a>
+                <button class="btn btn-primary" onclick="openCreateModal()">+ New Blog Post</button>
+            </div>
+        </div>
+
+        <div id="blogList" class="blog-list">
+            <div class="loading">Loading blogs...</div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Blog Modal -->
+    <div id="blogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create New Blog Post</h3>
+                <span class="close" onclick="closeBlogModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="blogForm">
+                    <input type="hidden" id="blogId" value="">
+                    
+                    <div class="form-group">
+                        <label for="title">Title *</label>
+                        <input type="text" id="title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="slug">URL Slug *</label>
+                        <input type="text" id="slug" class="form-control" required>
+                        <small>Only lowercase letters, numbers, and hyphens allowed</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="excerpt">Excerpt *</label>
+                        <textarea id="excerpt" class="form-control" required placeholder="Brief description of the blog post"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="content">Content *</label>
+                        <textarea id="content" class="form-control" required style="min-height: 300px;" placeholder="Write your blog content here..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="featuredImage">Featured Image URL</label>
+                        <input type="url" id="featuredImage" class="form-control" placeholder="https://i.imgur.com/example.jpg or https://example.com/image.jpg">
+                        <small><strong>Recommended:</strong> Use <a href="https://imgur.com" target="_blank">Imgur</a>, <a href="https://postimg.cc" target="_blank">PostImg</a>, or <a href="https://imgbb.com" target="_blank">ImgBB</a> for reliable image hosting. <br><strong>Note:</strong> Google Drive links don't work due to CORS restrictions.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" class="form-control" placeholder="medical, neet, admissions (comma separated)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" class="form-control" required>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeBlogModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Blog Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let blogs = [];
+        let editingBlogId = null;
+
+        // Load blogs on page load
+        document.addEventListener('DOMContentLoaded', loadBlogs);
+
+        async function loadBlogs() {
+            try {
+                const response = await fetch('/admin/blogs');
+                const data = await response.json();
+                if (data.success) {
+                    blogs = data.blogs;
+                    renderBlogs();
+                } else {
+                    document.getElementById('blogList').innerHTML = '<div class="loading">Failed to load blogs</div>';
+                }
+            } catch (error) {
+                console.error('Error loading blogs:', error);
+                document.getElementById('blogList').innerHTML = '<div class="loading">Error loading blogs</div>';
+            }
+        }
+
+        function renderBlogs() {
+            const blogList = document.getElementById('blogList');
+            
+            if (blogs.length === 0) {
+                blogList.innerHTML = '<div class="loading">No blog posts found. Create your first blog post!</div>';
+                return;
+            }
+
+            blogList.innerHTML = blogs.map(blog => `
+                <div class="blog-item">
+                    <div class="blog-meta">
+                        <h3>${blog.title}</h3>
+                        <span class="blog-status status-${blog.status}">${blog.status.toUpperCase()}</span>
+                    </div>
+                    <p style="color: #666; margin-bottom: 10px;">${blog.excerpt}</p>
+                    <div style="font-size: 12px; color: #999; margin-bottom: 15px;">
+                        Created: ${new Date(blog.createdAt).toLocaleDateString()} ${new Date(blog.createdAt).toLocaleTimeString()} | 
+                        Updated: ${new Date(blog.updatedAt).toLocaleDateString()} ${new Date(blog.updatedAt).toLocaleTimeString()}
+                        ${blog.tags ? ` | Tags: ${blog.tags}` : ''}
+                    </div>
+                    <div class="blog-actions">
+                        ${blog.status === 'published' ? `<a href="/blog/${blog.slug}" target="_blank" class="btn btn-secondary">👁️ View</a>` : ''}
+                        <button class="btn btn-primary" onclick="editBlog('${blog.id}')">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteBlog('${blog.id}', '${blog.title}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCreateModal() {
+            editingBlogId = null;
+            document.getElementById('modalTitle').textContent = 'Create New Blog Post';
+            document.getElementById('blogForm').reset();
+            document.getElementById('blogId').value = '';
+            document.getElementById('blogModal').style.display = 'block';
+        }
+
+        function editBlog(blogId) {
+            const blog = blogs.find(b => b.id === blogId);
+            if (!blog) return;
+
+            editingBlogId = blogId;
+            document.getElementById('modalTitle').textContent = 'Edit Blog Post';
+            document.getElementById('blogId').value = blog.id;
+            document.getElementById('title').value = blog.title;
+            document.getElementById('slug').value = blog.slug;
+            document.getElementById('excerpt').value = blog.excerpt;
+            document.getElementById('content').value = blog.content;
+            document.getElementById('featuredImage').value = blog.featuredImage || '';
+            document.getElementById('tags').value = blog.tags || '';
+            document.getElementById('status').value = blog.status;
+            document.getElementById('blogModal').style.display = 'block';
+        }
+
+        function closeBlogModal() {
+            document.getElementById('blogModal').style.display = 'none';
+            editingBlogId = null;
+        }
+
+        // Auto-generate slug from title
+        document.getElementById('title').addEventListener('input', function() {
+            const title = this.value;
+            const slug = title.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
+            document.getElementById('slug').value = slug;
+        });
+
+        // Handle form submission
+        document.getElementById('blogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('title').value,
+                slug: document.getElementById('slug').value,
+                excerpt: document.getElementById('excerpt').value,
+                content: document.getElementById('content').value,
+                featuredImage: document.getElementById('featuredImage').value || null,
+                tags: document.getElementById('tags').value || null,
+                status: document.getElementById('status').value
+            };
+
+            try {
+                const url = editingBlogId ? `/admin/blogs/${editingBlogId}` : '/admin/blogs';
+                const method = editingBlogId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(editingBlogId ? 'Blog updated successfully!' : 'Blog created successfully!');
+                    closeBlogModal();
+                    loadBlogs();
+                } else {
+                    alert('Error: ' + (result.message || 'Failed to save blog'));
+                }
+            } catch (error) {
+                console.error('Error saving blog:', error);
+                alert('Error saving blog. Please try again.');
+            }
+        });
+
+        async function deleteBlog(blogId, title) {
+            if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/blogs/${blogId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Blog deleted successfully!');
+                    loadBlogs();
+                } else {
+                    alert('Error: ' + (result.message || 'Failed to delete blog'));
+                }
+            } catch (error) {
+                console.error('Error deleting blog:', error);
+                alert('Error deleting blog. Please try again.');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('blogModal');
+            if (event.target === modal) {
+                closeBlogModal();
+            }
+        }
+    </script>
+</body>
+</html>

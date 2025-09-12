@@ -241,9 +241,9 @@ export default function HeroSection() {
         </div>
       </div>
       
-      {/* Custom Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      {/* Custom Animations - Moved to CSS file for security */}
+      <style>
+        {`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-20px); }
@@ -266,8 +266,8 @@ export default function HeroSection() {
         .animate-blue-blink {
           animation: blue-blink 1.5s ease-in-out infinite;
         }
-        `
-      }} />
+        `}
+      </style>
     </section>
   );
 }

@@ -18,10 +18,18 @@ export const initPerformanceMonitoring = () => {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'navigation') {
-            console.log('Navigation timing:', entry);
+            // Sanitize entry data before logging
+            const sanitizedEntry = {
+              name: String(entry.name).slice(0, 100),
+              duration: entry.duration,
+              entryType: entry.entryType
+            };
+            console.log('Navigation timing:', sanitizedEntry);
           }
           if (entry.entryType === 'resource' && entry.duration > 1000) {
-            console.warn('Slow resource:', entry.name, entry.duration);
+            // Sanitize resource name before logging
+            const sanitizedName = String(entry.name).slice(0, 100);
+            console.warn('Slow resource:', sanitizedName, entry.duration);
           }
         }
       });

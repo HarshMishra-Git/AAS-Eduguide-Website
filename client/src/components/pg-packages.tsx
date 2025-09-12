@@ -104,7 +104,19 @@ function FeatureCell({ value }: { value: boolean | string }) {
   }
   
   const bgColor = colorMap[value as keyof typeof colorMap] || "bg-gray-100 text-gray-800";
-  const sanitizedValue = String(value).replace(/[<>"'&]/g, '');
+  // Properly sanitize the value to prevent XSS
+  const sanitizedValue = String(value)
+    .replace(/[<>"'&]/g, (match) => {
+      const entities: { [key: string]: string } = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '&': '&amp;'
+      };
+      return entities[match] || match;
+    })
+    .slice(0, 50); // Limit length
 
   return (
     <span className={`text-xs px-2 py-1 rounded ${bgColor}`}>
