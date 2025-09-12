@@ -30,19 +30,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ success: false, message: 'Table and ID required' });
       }
 
-      let result;
       switch (table) {
         case 'leads':
-          result = await sql`DELETE FROM leads WHERE id = ${id}`;
+          await sql`DELETE FROM leads WHERE id = ${id}`;
           break;
         case 'contacts':
-          result = await sql`DELETE FROM contacts WHERE id = ${id}`;
+          await sql`DELETE FROM contacts WHERE id = ${id}`;
           break;
         case 'bams_admissions':
-          result = await sql`DELETE FROM bams_admissions WHERE id = ${id}`;
+          await sql`DELETE FROM bams_admissions WHERE id = ${id}`;
           break;
         case 'newsletters':
-          result = await sql`DELETE FROM newsletters WHERE id = ${id}`;
+          await sql`DELETE FROM newsletters WHERE id = ${id}`;
+          break;
+        case 'blogs':
+          await sql`DELETE FROM blogs WHERE id = ${id}`;
           break;
         default:
           return res.status(400).json({ success: false, message: 'Invalid table' });
@@ -152,45 +154,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         blogs = [];
       }
 
-      // Detect duplicates for highlighting
-      const detectDuplicates = (data: any[], emailField: string, phoneField: string) => {
-        const emailCounts: Record<string, number> = {};
-        const phoneCounts: Record<string, number> = {};
-        
-        data.forEach(item => {
-          const email = item[emailField];
-          const phone = item[phoneField];
-          if (email) emailCounts[email] = (emailCounts[email] || 0) + 1;
-          if (phone) phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
-        });
-        
-        return data.map(item => ({
-          ...item,
-          isDuplicate: (emailCounts[item[emailField]] > 1) || (phoneCounts[item[phoneField]] > 1)
-        }));
-      };
-
-      leads = detectDuplicates(leads, 'email', 'phone');
-      contacts = detectDuplicates(contacts, 'email', 'phone');
-      bamsAdmissions = detectDuplicates(bamsAdmissions, 'email', 'phone');
-      newsletters = detectDuplicates(newsletters, 'email', 'email'); // newsletters only have email
-
-      const html = `
-<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html>
 <head>
     <title>Admin Dashboard - AAS Eduguide</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { background: #1a365d; color: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #1a365d; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .stat-number { font-size: 2rem; font-weight: bold; color: #7cb342; }
-        .stat-label { color: #666; margin-top: 5px; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #7cb342; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
         .section { background: white; margin-bottom: 30px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .section-header { background: #7cb342; color: white; padding: 15px 20px; font-weight: bold; }
         .table { width: 100%; border-collapse: collapse; }
@@ -199,27 +176,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .table tr:hover { background: #f8f9fa; }
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
         .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
         .no-data { padding: 40px; text-align: center; color: #666; }
-        .duplicate-row { background-color: #fff3cd !important; border-left: 4px solid #ffc107; }
-        .duplicate-row:hover { background-color: #ffeaa7 !important; }
-        .action-buttons { display: flex; gap: 5px; align-items: center; }
-        .btn { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; text-decoration: none; display: inline-block; }
-        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger { background: #dc3545; color: white; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
         .btn-danger:hover { background: #c82333; }
         .btn-success { background: #28a745; color: white; }
         .btn-success:hover { background: #218838; }
         .export-section { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .export-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        .section-header-with-export { display: flex; justify-content: space-between; align-items: center; }
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .table { font-size: 0.9rem; }
-            .table th, .table td { padding: 8px 4px; }
-            .export-buttons { flex-direction: column; }
-            .action-buttons { flex-direction: column; gap: 2px; }
-        }
     </style>
-      <script>
+    <script>
         async function deleteRecord(table, id, rowElement) {
           if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
             return;
@@ -235,7 +201,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (result.success) {
               rowElement.remove();
               alert('Record deleted successfully!');
-              // Update stats
               location.reload();
             } else {
               alert('Failed to delete record: ' + result.message);
@@ -270,40 +235,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             alert('Error exporting data: ' + error.message);
           }
         }
-      </script>
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1>Admin Dashboard</h1>
-                    <p>AAS Eduguide - All Admission Services</p>
-                </div>
-                <a href="/api/admin-logout" style="color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 4px;">Logout</a>
-            </div>
+            <h1>Admin Dashboard</h1>
+            <p>AAS Eduguide - All Admission Services</p>
+            <a href="/api/admin-logout" style="color: white; float: right;">Logout</a>
         </div>
         
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-number">${leads.length}</div>
-                <div class="stat-label">Total Leads</div>
+                <div>Total Leads</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${contacts.length}</div>
-                <div class="stat-label">Contact Forms</div>
+                <div>Contact Forms</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${bamsAdmissions.length}</div>
-                <div class="stat-label">BAMS Admissions</div>
+                <div>BAMS Admissions</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${newsletters.length}</div>
-                <div class="stat-label">Newsletter Subscribers</div>
+                <div>Newsletter Subscribers</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${blogs.length}</div>
-                <div class="stat-label">Blog Posts</div>
+                <div>Blog Posts</div>
             </div>
         </div>
         
@@ -314,19 +275,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <button class="btn btn-success" onclick="exportData('contacts')">📥 Export Contacts</button>
                 <button class="btn btn-success" onclick="exportData('bams_admissions')">📥 Export BAMS</button>
                 <button class="btn btn-success" onclick="exportData('newsletters')">📥 Export Newsletters</button>
+                <button class="btn btn-success" onclick="exportData('blogs')">📥 Export Blogs</button>
             </div>
         </div>
         
         <div style="text-align: center; margin: 40px 0;">
-            <a href="/admin/blog-manager" class="btn btn-success" style="margin: 5px; padding: 10px 20px; text-decoration: none;">📝 Manage Blog Posts</a>
-            <a href="/admin/data" class="btn btn-success" style="margin: 5px; padding: 10px 20px; text-decoration: none;">📊 View All Data</a>
+            <a href="/admin/blog-manager" class="btn btn-primary">📝 Manage Blog Posts</a>
+            <a href="/admin/data" class="btn btn-secondary">📊 View All Data</a>
         </div>
         
         <div class="section">
-            <div class="section-header-with-export">
-                <span>Recent Leads</span>
-                <button class="btn btn-success" onclick="exportData('leads')">📥 Export</button>
-            </div>
+            <div class="section-header">Blog Posts</div>
+            ${blogs.length > 0 ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${blogs.map(blog => `
+                    <tr id="blog-${blog.id}">
+                        <td>${sanitizeHtml(blog.title)}</td>
+                        <td><span class="badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}">${blog.status}</span></td>
+                        <td>${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : '-'}</td>
+                        <td>${blog.updated_at ? new Date(blog.updated_at).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn-danger" onclick="deleteRecord('blogs', '${blog.id}', document.getElementById('blog-${blog.id}'))">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : '<div class="no-data">No blog posts found</div>'}
+        </div>
+        
+        <div class="section">
+            <div class="section-header">Recent Leads</div>
             ${leads.length > 0 ? `
             <table class="table">
                 <thead>
@@ -335,24 +324,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Exam</th>
-                        <th>State</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${leads.map(lead => `
-                    <tr id="lead-${lead.id}" ${lead.isDuplicate ? 'class="duplicate-row"' : ''}>
-                        <td>${sanitizeHtml(lead.name)} ${lead.isDuplicate ? '⚠️' : ''}</td>
+                    <tr id="lead-${lead.id}">
+                        <td>${sanitizeHtml(lead.name)}</td>
                         <td>${sanitizeHtml(lead.email)}</td>
                         <td>${sanitizeHtml(lead.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(lead.exam)}</span></td>
-                        <td>${lead.preferred_state ? sanitizeHtml(lead.preferred_state) : '-'}</td>
                         <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-${lead.id}'))">🗑️ Delete</button>
-                            </div>
+                            <button class="btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-${lead.id}'))">🗑️ Delete</button>
                         </td>
                     </tr>
                     `).join('')}
@@ -362,10 +347,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         </div>
 
         <div class="section">
-            <div class="section-header-with-export">
-                <span>Contact Form Submissions</span>
-                <button class="btn btn-success" onclick="exportData('contacts')">📥 Export</button>
-            </div>
+            <div class="section-header">Contact Form Submissions</div>
             ${contacts.length > 0 ? `
             <table class="table">
                 <thead>
@@ -374,24 +356,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Exam</th>
-                        <th>Message</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${contacts.map(contact => `
-                    <tr id="contact-${contact.id}" ${contact.isDuplicate ? 'class="duplicate-row"' : ''}>
-                        <td>${sanitizeHtml(contact.full_name)} ${contact.isDuplicate ? '⚠️' : ''}</td>
+                    <tr id="contact-${contact.id}">
+                        <td>${sanitizeHtml(contact.full_name)}</td>
                         <td>${sanitizeHtml(contact.email)}</td>
                         <td>${sanitizeHtml(contact.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(contact.exam)}</span></td>
-                        <td>${contact.message ? sanitizeHtml(contact.message).substring(0, 50) + '...' : '-'}</td>
                         <td>${contact.created_at ? new Date(contact.created_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-danger" onclick="deleteRecord('contacts', '${contact.id}', document.getElementById('contact-${contact.id}'))">🗑️ Delete</button>
-                            </div>
+                            <button class="btn-danger" onclick="deleteRecord('contacts', '${contact.id}', document.getElementById('contact-${contact.id}'))">🗑️ Delete</button>
                         </td>
                     </tr>
                     `).join('')}
@@ -401,49 +379,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         </div>
 
         <div class="section">
-            <div class="section-header-with-export">
-                <span>BAMS Admissions</span>
-                <button class="btn btn-success" onclick="exportData('bams_admissions')">📥 Export</button>
-            </div>
+            <div class="section-header">BAMS Admissions</div>
             ${bamsAdmissions.length > 0 ? `
             <table class="table">
                 <thead>
                     <tr>
-                         <th>Name</th>
-                         <th>Email</th>
-                         <th>Phone</th>
-                         <th>Category</th>
-                         <th>Counseling Type</th>
-                         <th>Date</th>
-                         <th>Actions</th>
-                     </tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
                 </thead>
                 <tbody>
                     ${bamsAdmissions.map(admission => `
-                     <tr id="bams-${admission.id}" ${admission.isDuplicate ? 'class="duplicate-row"' : ''}>
-                         <td>${sanitizeHtml(admission.full_name)} ${admission.isDuplicate ? '⚠️' : ''}</td>
-                         <td>${sanitizeHtml(admission.email)}</td>
-                         <td>${sanitizeHtml(admission.phone)}</td>
-                         <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
-                         <td><span class="badge badge-success">${sanitizeHtml(admission.counseling_type)}</span></td>
-                         <td>${admission.created_at ? new Date(admission.created_at).toLocaleDateString() : '-'}</td>
-                         <td>
-                             <div class="action-buttons">
-                                 <button class="btn btn-danger" onclick="deleteRecord('bams_admissions', '${admission.id}', document.getElementById('bams-${admission.id}'))">🗑️ Delete</button>
-                             </div>
-                         </td>
-                     </tr>
-                     `).join('')}
+                    <tr id="bams-${admission.id}">
+                        <td>${sanitizeHtml(admission.full_name)}</td>
+                        <td>${sanitizeHtml(admission.email)}</td>
+                        <td>${sanitizeHtml(admission.phone)}</td>
+                        <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
+                        <td>${admission.created_at ? new Date(admission.created_at).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn-danger" onclick="deleteRecord('bams_admissions', '${admission.id}', document.getElementById('bams-${admission.id}'))">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                    `).join('')}
                 </tbody>
             </table>
             ` : '<div class="no-data">No BAMS admissions found</div>'}
         </div>
 
         <div class="section">
-            <div class="section-header-with-export">
-                <span>Newsletter Subscribers</span>
-                <button class="btn btn-success" onclick="exportData('newsletters')">📥 Export</button>
-            </div>
+            <div class="section-header">Newsletter Subscribers</div>
             ${newsletters.length > 0 ? `
             <table class="table">
                 <thead>
@@ -455,47 +423,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </thead>
                 <tbody>
                     ${newsletters.map(newsletter => `
-                    <tr id="newsletter-${newsletter.id}" ${newsletter.isDuplicate ? 'class="duplicate-row"' : ''}>
-                        <td>${sanitizeHtml(newsletter.email)} ${newsletter.isDuplicate ? '⚠️' : ''}</td>
+                    <tr id="newsletter-${newsletter.id}">
+                        <td>${sanitizeHtml(newsletter.email)}</td>
                         <td>${newsletter.subscribed_at ? new Date(newsletter.subscribed_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-danger" onclick="deleteRecord('newsletters', '${newsletter.id}', document.getElementById('newsletter-${newsletter.id}'))">🗑️ Delete</button>
-                            </div>
+                            <button class="btn-danger" onclick="deleteRecord('newsletters', '${newsletter.id}', document.getElementById('newsletter-${newsletter.id}'))">🗑️ Delete</button>
                         </td>
                     </tr>
                     `).join('')}
                 </tbody>
             </table>
             ` : '<div class="no-data">No newsletter subscribers found</div>'}
-        </div>
-        
-        <div class="section">
-            <div class="section-header-with-export">
-                <span>Blog Posts</span>
-            </div>
-            ${blogs.length > 0 ? `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Updated</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${blogs.map(blog => `
-                    <tr>
-                        <td>${sanitizeHtml(blog.title)}</td>
-                        <td><span class="badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}" style="background: ${blog.status === 'published' ? '#d4edda' : '#fff3cd'}; color: ${blog.status === 'published' ? '#155724' : '#856404'};">${blog.status}</span></td>
-                        <td>${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : '-'}</td>
-                        <td>${blog.updated_at ? new Date(blog.updated_at).toLocaleDateString() : '-'}</td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            ` : '<div class="no-data">No blog posts found</div>'}
         </div>
     </div>
 </body>
