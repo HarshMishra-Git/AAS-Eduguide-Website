@@ -81,6 +81,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           data = await sql`SELECT * FROM newsletters ORDER BY subscribed_at DESC`;
           filename = 'newsletters_export.csv';
           break;
+        case 'blogs':
+          data = await sql`SELECT * FROM blogs ORDER BY created_at DESC`;
+          filename = 'blogs_export.csv';
+          break;
         default:
           return res.status(400).json({ success: false, message: 'Invalid table' });
       }
@@ -111,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const sql = neon(process.env.DATABASE_URL!);
       
-      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [], bamsAdmissions: any[] = [];
+      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [], bamsAdmissions: any[] = [], blogs: any[] = [];
       
       try {
         leads = await sql`SELECT * FROM leads ORDER BY created_at DESC LIMIT 50`;
@@ -139,6 +143,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       } catch (e) {
         console.log('BAMS admissions table not found or empty');
         bamsAdmissions = [];
+      }
+      
+      try {
+        blogs = await sql`SELECT * FROM blogs ORDER BY created_at DESC LIMIT 50`;
+      } catch (e) {
+        console.log('Blogs table not found or empty');
+        blogs = [];
       }
 
       // Detect duplicates for highlighting
@@ -290,6 +301,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <div class="stat-number">${newsletters.length}</div>
                 <div class="stat-label">Newsletter Subscribers</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number">${blogs.length}</div>
+                <div class="stat-label">Blog Posts</div>
+            </div>
         </div>
         
         <div class="export-section">
@@ -300,6 +315,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <button class="btn btn-success" onclick="exportData('bams_admissions')">📥 Export BAMS</button>
                 <button class="btn btn-success" onclick="exportData('newsletters')">📥 Export Newsletters</button>
             </div>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="/admin/blog-manager" class="btn btn-success" style="margin: 5px; padding: 10px 20px; text-decoration: none;">📝 Manage Blog Posts</a>
+            <a href="/admin/data" class="btn btn-success" style="margin: 5px; padding: 10px 20px; text-decoration: none;">📊 View All Data</a>
         </div>
         
         <div class="section">
@@ -448,6 +468,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 </tbody>
             </table>
             ` : '<div class="no-data">No newsletter subscribers found</div>'}
+        </div>
+        
+        <div class="section">
+            <div class="section-header-with-export">
+                <span>Blog Posts</span>
+            </div>
+            ${blogs.length > 0 ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${blogs.map(blog => `
+                    <tr>
+                        <td>${sanitizeHtml(blog.title)}</td>
+                        <td><span class="badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}" style="background: ${blog.status === 'published' ? '#d4edda' : '#fff3cd'}; color: ${blog.status === 'published' ? '#155724' : '#856404'};">${blog.status}</span></td>
+                        <td>${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : '-'}</td>
+                        <td>${blog.updated_at ? new Date(blog.updated_at).toLocaleDateString() : '-'}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : '<div class="no-data">No blog posts found</div>'}
         </div>
     </div>
 </body>
