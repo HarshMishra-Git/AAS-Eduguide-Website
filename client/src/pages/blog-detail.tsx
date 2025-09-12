@@ -35,7 +35,7 @@ export default function BlogDetailPage() {
 
   const fetchBlog = async (blogSlug: string) => {
     try {
-      const response = await fetch(`/api/contacts/blogs/${blogSlug}`);
+      const response = await fetch(`/api/blog?slug=${encodeURIComponent(blogSlug)}`);
       const data = await response.json();
       if (data.success) {
         setBlog(data.blog);
