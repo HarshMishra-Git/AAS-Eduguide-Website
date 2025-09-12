@@ -143,8 +143,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Detect duplicates for highlighting
       const detectDuplicates = (data: any[], emailField: string, phoneField: string) => {
-        const emailCounts = {};
-        const phoneCounts = {};
+        const emailCounts: Record<string, number> = {};
+        const phoneCounts: Record<string, number> = {};
         
         data.forEach(item => {
           const email = item[emailField];
