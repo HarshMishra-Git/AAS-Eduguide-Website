@@ -30,7 +30,7 @@ export default function BlogsPage() {
 
   const fetchBlogs = async () => {
     try {
-      const response = await fetch('/api/blogs');
+      const response = await fetch('/api/contacts/blogs');
       const data = await response.json();
       if (data.success) {
         setBlogs(data.blogs);

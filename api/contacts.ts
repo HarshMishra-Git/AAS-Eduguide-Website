@@ -11,6 +11,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
+  // Handle blog requests
+  if (req.url?.startsWith('/api/contacts/blogs')) {
+    const sql = neon(process.env.DATABASE_URL!);
+    
+    if (req.method === 'GET') {
+      try {
+        const pathParts = req.url.split('/');
+        const slug = pathParts[pathParts.length - 1];
+        
+        if (slug && slug !== 'blogs') {
+          // Get single blog by slug
+          const result = await sql`SELECT * FROM blogs WHERE slug = ${slug} AND status = 'published'`;
+          const blog = result[0];
+          
+          if (!blog) {
+            return res.status(404).json({ success: false, message: "Blog not found" });
+          }
+          
+          return res.json({ success: true, blog });
+        } else {
+          // Get all published blogs
+          const blogs = await sql`SELECT * FROM blogs WHERE status = 'published' ORDER BY created_at DESC`;
+          return res.json({ success: true, blogs });
+        }
+      } catch (error) {
+        return res.status(500).json({ success: false, message: "Failed to fetch blogs" });
+      }
+    }
+  }
+
   if (req.method === 'POST') {
     try {
       const sql = neon(process.env.DATABASE_URL!);
