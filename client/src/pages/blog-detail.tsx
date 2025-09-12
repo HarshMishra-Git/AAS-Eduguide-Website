@@ -67,17 +67,17 @@ export default function BlogDetailPage() {
   };
 
   const convertImageUrl = (url: string) => {
-    if (!url) return url;
+    if (!url) return null;
     
-    // Handle Google Drive URLs (though they may not work due to CORS)
+    // Handle Google Drive URLs
     if (url.includes('drive.google.com/file/d/')) {
       const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
       if (fileIdMatch) {
-        return `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`;
+        return `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`;
       }
     }
     
-    // Handle other image URLs as-is
+    // Handle direct image URLs
     return url;
   };
 
@@ -166,22 +166,6 @@ export default function BlogDetailPage() {
                 className="w-full h-64 md:h-96 object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  const currentSrc = target.src;
-                  
-                  if (currentSrc.includes('lh3.googleusercontent.com')) {
-                    const fileId = currentSrc.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
-                    if (fileId) {
-                      target.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                      return;
-                    }
-                  } else if (currentSrc.includes('drive.google.com/uc')) {
-                    const fileId = currentSrc.match(/id=([a-zA-Z0-9-_]+)/)?.[1];
-                    if (fileId) {
-                      target.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-                      return;
-                    }
-                  }
-                  
                   target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%236b7280" font-family="Arial" font-size="16"%3EImage not available%3C/text%3E%3C/svg%3E';
                   target.className = 'w-full h-64 md:h-96 object-cover opacity-75';
                 }}

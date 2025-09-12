@@ -42,10 +42,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(404).json({ success: false, message: "Blog not found" });
         }
         
-        return res.json({ success: true, blog });
+        // Convert snake_case to camelCase for frontend compatibility
+        const blogWithCamelCase = {
+          ...blog,
+          createdAt: blog.created_at,
+          updatedAt: blog.updated_at,
+          featuredImage: blog.featured_image
+        };
+        
+        return res.json({ success: true, blog: blogWithCamelCase });
       } else {
         // Get all published blogs
-        const blogs = await sql`SELECT * FROM blogs WHERE status = 'published' ORDER BY created_at DESC`;
+        const blogsResult = await sql`SELECT * FROM blogs WHERE status = 'published' ORDER BY created_at DESC`;
+        
+        // Convert snake_case to camelCase for frontend compatibility
+        const blogs = blogsResult.map(blog => ({
+          ...blog,
+          createdAt: blog.created_at,
+          updatedAt: blog.updated_at,
+          featuredImage: blog.featured_image
+        }));
+        
         return res.json({ success: true, blogs });
       }
     } catch (error) {
