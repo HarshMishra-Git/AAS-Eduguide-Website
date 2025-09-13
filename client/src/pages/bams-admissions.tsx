@@ -26,6 +26,35 @@ const bamsFormSchema = z.object({
 });
 
 type BAMSFormData = z.infer<typeof bamsFormSchema>;
+
+// Simple Math CAPTCHA Component
+function MathCaptcha({ onVerify }: { onVerify: (isValid: boolean) => void }) {
+  const [num1] = useState(() => Math.floor(Math.random() * 10) + 1);
+  const [num2] = useState(() => Math.floor(Math.random() * 10) + 1);
+  const [userAnswer, setUserAnswer] = useState("");
+  const correctAnswer = num1 + num2;
+
+  useEffect(() => {
+    const isCorrect = parseInt(userAnswer) === correctAnswer;
+    onVerify(isCorrect && userAnswer !== "");
+  }, [userAnswer, correctAnswer, onVerify]);
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-gray-700">
+        Security Check: What is {num1} + {num2}?
+      </label>
+      <Input
+        type="number"
+        placeholder="Enter the answer"
+        value={userAnswer}
+        onChange={(e) => setUserAnswer(e.target.value)}
+        className="bg-white/80 backdrop-blur-sm"
+      />
+    </div>
+  );
+}
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +115,7 @@ function BAMSContactForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false);
 
   const form = useForm<BAMSFormData>({
     resolver: zodResolver(bamsFormSchema),
@@ -233,13 +263,21 @@ function BAMSContactForm() {
           )}
         />
 
+        <MathCaptcha onVerify={setIsCaptchaValid} />
+
         <Button 
           type="submit"
           className="w-full btn-primary py-3 font-medium"
-          disabled={createBamsAdmissionMutation.isPending}
+          disabled={createBamsAdmissionMutation.isPending || !isCaptchaValid}
         >
           {createBamsAdmissionMutation.isPending ? "Sending..." : "Get Free BAMS Counseling"}
         </Button>
+        
+        {!isCaptchaValid && (
+          <p className="text-sm text-red-600 text-center">
+            Please solve the math problem to continue
+          </p>
+        )}
         
         <p className="text-sm text-gray-600 text-center">
           Our BAMS experts will contact you within 15 minutes
