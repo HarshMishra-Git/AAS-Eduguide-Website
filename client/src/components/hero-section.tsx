@@ -197,7 +197,7 @@ export default function HeroSection() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4">
               <TrustBadge value="13+" label="Years Experience" counter={13} />
-              <TrustBadge value="10 Lac+" label="Students Guided" counter={200000} />
+              <TrustBadge value="2 Lac+" label="Students Guided" counter={200056} />
             </div>
             
             {/* Action Buttons */}
