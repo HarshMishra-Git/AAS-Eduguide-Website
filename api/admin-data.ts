@@ -304,9 +304,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Phone</th>
+                        <th>NEET Score</th>
+                        <th>NEET Rank</th>
                         <th>Category</th>
                         <th>State</th>
-                        <th>Counseling</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
@@ -317,9 +318,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <td>${sanitizeHtml(admission.full_name)} ${admission.isDuplicate ? '⚠️' : ''}</td>
                         <td>${sanitizeHtml(admission.email)}</td>
                         <td>${sanitizeHtml(admission.phone)}</td>
+                        <td>${admission.neet_score ? sanitizeHtml(admission.neet_score) : '-'}</td>
+                        <td>${admission.neet_rank ? sanitizeHtml(admission.neet_rank) : '-'}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(admission.category)}</span></td>
                         <td>${admission.domicile_state ? sanitizeHtml(admission.domicile_state) : '-'}</td>
-                        <td><span class="badge badge-success">${sanitizeHtml(admission.counseling_type)}</span></td>
                         <td>${admission.created_at ? new Date(admission.created_at).toLocaleDateString() : '-'}</td>
                         <td>
                             <button class="btn btn-danger" onclick="deleteRecord('bams_admissions', '${admission.id}', document.getElementById('bams-${admission.id}'))">🗑️</button>

@@ -85,6 +85,8 @@ function BAMSContactForm() {
       category: "general",
       domicileState: "uttar-pradesh",
       counselingType: "state",
+      neetScore: "",
+      neetRank: "",
       message: "",
     },
   });
@@ -156,6 +158,43 @@ function BAMSContactForm() {
                   <Input 
                     type="tel"
                     placeholder="Phone Number" 
+                    className="bg-white/80 backdrop-blur-sm"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="neetScore"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input 
+                    type="number"
+                    placeholder="NEET Score (Optional)" 
+                    className="bg-white/80 backdrop-blur-sm"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="neetRank"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input 
+                    type="number"
+                    placeholder="NEET Rank (Optional)" 
                     className="bg-white/80 backdrop-blur-sm"
                     {...field} 
                   />

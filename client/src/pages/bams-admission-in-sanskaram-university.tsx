@@ -21,6 +21,8 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   state: z.string().min(1, "Please select your state"),
+  neetScore: z.string().optional(),
+  neetRank: z.string().optional(),
   message: z.string().optional(),
 });
 
@@ -37,6 +39,8 @@ function BAMSSanskaramContactForm() {
       email: "",
       phone: "",
       state: "",
+      neetScore: "",
+      neetRank: "",
       message: "",
     },
   });

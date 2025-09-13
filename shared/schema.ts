@@ -50,6 +50,8 @@ export const bamsAdmissions = pgTable("bams_admissions", {
   category: text("category").notNull().default("general"),
   domicileState: text("domicile_state").notNull().default("uttar-pradesh"),
   counselingType: text("counseling_type").notNull().default("state"),
+  neetScore: text("neet_score"),
+  neetRank: text("neet_rank"),
   message: text("message"),
   createdAt: timestamp("created_at").defaultNow(),
 });
