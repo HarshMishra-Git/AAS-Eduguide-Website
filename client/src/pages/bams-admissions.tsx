@@ -11,6 +11,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { insertBamsAdmissionSchema, type InsertBamsAdmission } from "@shared/schema";
+import { z } from "zod";
+
+const bamsFormSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  category: z.string().default("general"),
+  domicileState: z.string().default("uttar-pradesh"),
+  counselingType: z.string().default("state"),
+  neetScore: z.string().min(1, "NEET Score is required"),
+  neetRank: z.string().min(1, "NEET Rank is required"),
+  message: z.string().optional(),
+});
+
+type BAMSFormData = z.infer<typeof bamsFormSchema>;
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -72,14 +87,8 @@ function BAMSContactForm() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
 
-  const form = useForm<InsertBamsAdmission>({
-    resolver: zodResolver(insertBamsAdmissionSchema.extend({
-      fullName: insertBamsAdmissionSchema.shape.fullName.min(2, "Full name must be at least 2 characters"),
-      email: insertBamsAdmissionSchema.shape.email.email("Please enter a valid email"),
-      phone: insertBamsAdmissionSchema.shape.phone.min(10, "Phone number must be at least 10 digits"),
-      neetScore: insertBamsAdmissionSchema.shape.neetScore.min(1, "NEET Score is required"),
-      neetRank: insertBamsAdmissionSchema.shape.neetRank.min(1, "NEET Rank is required"),
-    })),
+  const form = useForm<BAMSFormData>({
+    resolver: zodResolver(bamsFormSchema),
     defaultValues: {
       fullName: "",
       email: "",
@@ -109,8 +118,8 @@ function BAMSContactForm() {
     },
   });
 
-  const onSubmit = (data: InsertBamsAdmission) => {
-    createBamsAdmissionMutation.mutate(data);
+  const onSubmit = (data: BAMSFormData) => {
+    createBamsAdmissionMutation.mutate(data as InsertBamsAdmission);
   };
 
   return (
