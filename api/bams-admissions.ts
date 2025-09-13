@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     try {
       const sql = neon(process.env.DATABASE_URL!);
-      const { fullName, email, phone, category, domicileState, counselingType, message } = req.body;
+      const { fullName, email, phone, category, domicileState, counselingType, neetScore, neetRank, message } = req.body;
       
       // Simple validation
       if (!fullName || !email || !phone) {
@@ -26,8 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Insert into database using exact column names from migration
       const result = await sql`
-        INSERT INTO bams_admissions (full_name, email, phone, category, domicile_state, counseling_type, message)
-        VALUES (${fullName}, ${email}, ${phone}, ${category || 'general'}, ${domicileState || 'uttar-pradesh'}, ${counselingType || 'state'}, ${message || ''})
+        INSERT INTO bams_admissions (full_name, email, phone, category, domicile_state, counseling_type, neet_score, neet_rank, message)
+        VALUES (${fullName}, ${email}, ${phone}, ${category || 'general'}, ${domicileState || 'uttar-pradesh'}, ${counselingType || 'state'}, ${neetScore}, ${neetRank}, ${message || ''})
         RETURNING *
       `;
       
