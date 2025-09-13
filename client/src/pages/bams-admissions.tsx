@@ -16,11 +16,18 @@ import { z } from "zod";
 const bamsFormSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string()
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits")
+    .refine((val) => val.length === 10, "Phone number must be exactly 10 digits"),
   category: z.string().default("general"),
   domicileState: z.string().default("uttar-pradesh"),
   counselingType: z.string().default("state"),
-  neetScore: z.string().min(1, "NEET Score is required"),
+  neetScore: z.string()
+    .min(1, "NEET Score is required")
+    .refine((val) => {
+      const score = parseInt(val);
+      return !isNaN(score) && score >= 1 && score <= 720;
+    }, "NEET Score must be between 1 and 720"),
   neetRank: z.string().min(1, "NEET Rank is required"),
   message: z.string().optional(),
 });
@@ -198,8 +205,13 @@ function BAMSContactForm() {
                 <FormControl>
                   <Input 
                     type="tel"
-                    placeholder="Phone Number" 
+                    placeholder="Phone Number (10 digits only)" 
                     className="bg-white/80 backdrop-blur-sm"
+                    maxLength={10}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9]/g, '');
+                    }}
                     {...field} 
                   />
                 </FormControl>
@@ -218,8 +230,16 @@ function BAMSContactForm() {
                 <FormControl>
                   <Input 
                     type="number"
-                    placeholder="NEET Score" 
+                    placeholder="NEET Score (1-720)" 
                     className="bg-white/80 backdrop-blur-sm"
+                    min="1"
+                    max="720"
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      const value = parseInt(target.value);
+                      if (value > 720) target.value = '720';
+                      if (value < 1 && target.value !== '') target.value = '1';
+                    }}
                     {...field} 
                   />
                 </FormControl>
