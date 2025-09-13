@@ -35,7 +35,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `;
       
       console.log('Lead saved successfully:', result[0]);
-      res.json({ success: true, lead: result[0] });
+      if (source === 'bams_sanskaram_university') {
+        res.json({ success: true, admission: result[0] });
+      } else {
+        res.json({ success: true, lead: result[0] });
+      }
     } catch (error) {
       console.error('Lead creation error:', error);
       res.status(500).json({ 

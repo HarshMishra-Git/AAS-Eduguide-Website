@@ -22,6 +22,9 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Alias for BAMS Sanskaram University (uses same leads table)
+export const bamsInSanskaramUniversity = leads;
+
 export const newsletters = pgTable("newsletters", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
@@ -50,6 +53,8 @@ export const bamsAdmissions = pgTable("bams_admissions", {
   message: text("message"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+
 
 export const blogs = pgTable("blogs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -113,6 +118,8 @@ export const insertBamsAdmissionSchema = createInsertSchema(bamsAdmissions).omit
   updatedAt: true,
 });
 
+
+
 export const insertBlogSchema = createInsertSchema(blogs).omit({
   id: true,
   createdAt: true,
@@ -129,5 +136,6 @@ export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 export type InsertBamsAdmission = z.infer<typeof insertBamsAdmissionSchema>;
 export type BamsAdmission = typeof bamsAdmissions.$inferSelect;
+
 export type InsertBlog = z.infer<typeof insertBlogSchema>;
 export type Blog = typeof blogs.$inferSelect;

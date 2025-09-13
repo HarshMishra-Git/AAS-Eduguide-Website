@@ -10,6 +10,7 @@ import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 import ThankYouPage from "@/pages/thank-you";
 import BAMSAdmissionsPage from "@/pages/bams-admissions";
+import BAMSAdmissionInSanskaramUniversityPage from "@/pages/bams-admission-in-sanskaram-university";
 import BlogsPage from "@/pages/blogs";
 import BlogDetailPage from "@/pages/blog-detail";
 import NotFound from "@/pages/not-found";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/privacypolicy" component={PrivacyPage} />
       <Route path="/thank-you" component={ThankYouPage} />
       <Route path="/bams-admissions-in-up" component={BAMSAdmissionsPage} />
+      <Route path="/bams-admission-in-sanskaram-university" component={BAMSAdmissionInSanskaramUniversityPage} />
       <Route path="/blogs" component={BlogsPage} />
       <Route path="/blog/:slug" component={BlogDetailPage} />
       <Route component={NotFound} />

@@ -248,8 +248,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         <div class="stats">
             <div class="stat-card">
-                <div class="stat-number">${leads.length}</div>
-                <div>Total Leads</div>
+                <div class="stat-number">${leads.filter(l => l.source === 'bams_sanskaram_university').length}</div>
+                <div>BAMS in Sanskaram University</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${leads.filter(l => l.source !== 'bams_sanskaram_university').length}</div>
+                <div>Other Leads</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${contacts.length}</div>

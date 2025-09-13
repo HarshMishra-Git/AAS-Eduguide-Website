@@ -24,12 +24,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const sql = neon(process.env.DATABASE_URL!);
       
-      let leads: any[] = [], contacts: any[] = [], newsletters: any[] = [], bamsAdmissions: any[] = [], blogs: any[] = [];
+      let leads: any[] = [], bamsInSanskaramUniversity: any[] = [], contacts: any[] = [], newsletters: any[] = [], bamsAdmissions: any[] = [], blogs: any[] = [];
       
       try {
-        leads = await sql`SELECT * FROM leads ORDER BY created_at DESC`;
+        const allLeads = await sql`SELECT * FROM leads ORDER BY created_at DESC`;
+        leads = allLeads.filter(lead => lead.source !== 'bams_sanskaram_university');
+        bamsInSanskaramUniversity = allLeads.filter(lead => lead.source === 'bams_sanskaram_university');
       } catch (e) {
         leads = [];
+        bamsInSanskaramUniversity = [];
       }
       
       try {
@@ -75,6 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
 
       leads = detectDuplicates(leads, 'email', 'phone');
+      bamsInSanskaramUniversity = detectDuplicates(bamsInSanskaramUniversity, 'email', 'phone');
       contacts = detectDuplicates(contacts, 'email', 'phone');
       bamsAdmissions = detectDuplicates(bamsAdmissions, 'email', 'phone');
       newsletters = detectDuplicates(newsletters, 'email', 'email');
@@ -173,7 +177,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         <div class="section">
             <div class="section-header">
-                <span>📋 Leads (${leads.length})</span>
+                <span>🏥 BAMS in Sanskaram University (${bamsInSanskaramUniversity.length})</span>
+                <button class="btn btn-primary" onclick="exportData('leads')">📥 Export CSV</button>
+            </div>
+            ${bamsInSanskaramUniversity.length > 0 ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Exam</th>
+                        <th>State</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${bamsInSanskaramUniversity.map(lead => `
+                    <tr id="lead-${lead.id}" ${lead.isDuplicate ? 'class="duplicate-row"' : ''}>
+                        <td>${sanitizeHtml(lead.name)} ${lead.isDuplicate ? '⚠️' : ''}</td>
+                        <td>${sanitizeHtml(lead.email)}</td>
+                        <td>${sanitizeHtml(lead.phone)}</td>
+                        <td><span class="badge badge-success">${sanitizeHtml(lead.exam)}</span></td>
+                        <td>${lead.preferred_state ? sanitizeHtml(lead.preferred_state) : '-'}</td>
+                        <td>${lead.message ? sanitizeHtml(lead.message).substring(0, 50) + '...' : '-'}</td>
+                        <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-${lead.id}'))">🗑️</button>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : '<div class="no-data">No BAMS in Sanskaram University inquiries found</div>'}
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span>📋 Other Leads (${leads.length})</span>
                 <button class="btn btn-primary" onclick="exportData('leads')">📥 Export CSV</button>
             </div>
             ${leads.length > 0 ? `
@@ -185,27 +228,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         <th>Phone</th>
                         <th>Exam</th>
                         <th>State</th>
+                        <th>Source</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${leads.map(lead => `
-                    <tr id="lead-${lead.id}" ${lead.isDuplicate ? 'class="duplicate-row"' : ''}>
+                    <tr id="lead-other-${lead.id}" ${lead.isDuplicate ? 'class="duplicate-row"' : ''}>
                         <td>${sanitizeHtml(lead.name)} ${lead.isDuplicate ? '⚠️' : ''}</td>
                         <td>${sanitizeHtml(lead.email)}</td>
                         <td>${sanitizeHtml(lead.phone)}</td>
                         <td><span class="badge badge-success">${sanitizeHtml(lead.exam)}</span></td>
                         <td>${lead.preferred_state ? sanitizeHtml(lead.preferred_state) : '-'}</td>
+                        <td>${lead.source ? sanitizeHtml(lead.source) : '-'}</td>
                         <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-${lead.id}'))">🗑️</button>
+                            <button class="btn btn-danger" onclick="deleteRecord('leads', '${lead.id}', document.getElementById('lead-other-${lead.id}'))">🗑️</button>
                         </td>
                     </tr>
                     `).join('')}
                 </tbody>
             </table>
-            ` : '<div class="no-data">No leads found</div>'}
+            ` : '<div class="no-data">No other leads found</div>'}
         </div>
 
         <div class="section">
