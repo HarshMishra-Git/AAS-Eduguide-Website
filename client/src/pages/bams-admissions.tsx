@@ -77,6 +77,8 @@ function BAMSContactForm() {
       fullName: insertBamsAdmissionSchema.shape.fullName.min(2, "Full name must be at least 2 characters"),
       email: insertBamsAdmissionSchema.shape.email.email("Please enter a valid email"),
       phone: insertBamsAdmissionSchema.shape.phone.min(10, "Phone number must be at least 10 digits"),
+      neetScore: insertBamsAdmissionSchema.shape.neetScore.min(1, "NEET Score is required"),
+      neetRank: insertBamsAdmissionSchema.shape.neetRank.min(1, "NEET Rank is required"),
     })),
     defaultValues: {
       fullName: "",
@@ -85,8 +87,8 @@ function BAMSContactForm() {
       category: "general",
       domicileState: "uttar-pradesh",
       counselingType: "state",
-      neetScore: "",
-      neetRank: "",
+      neetScore: undefined,
+      neetRank: undefined,
       message: "",
     },
   });
@@ -177,7 +179,7 @@ function BAMSContactForm() {
                 <FormControl>
                   <Input 
                     type="number"
-                    placeholder="NEET Score (Optional)" 
+                    placeholder="NEET Score" 
                     className="bg-white/80 backdrop-blur-sm"
                     {...field} 
                   />
@@ -194,7 +196,7 @@ function BAMSContactForm() {
                 <FormControl>
                   <Input 
                     type="number"
-                    placeholder="NEET Rank (Optional)" 
+                    placeholder="NEET Rank" 
                     className="bg-white/80 backdrop-blur-sm"
                     {...field} 
                   />
