@@ -17,8 +17,24 @@ const bamsFormSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
   phone: z.string()
-    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits")
-    .refine((val) => val.length === 10, "Phone number must be exactly 10 digits"),
+    .min(1, "Phone number is required")
+    .refine((val) => {
+      // Remove all non-digits and check if we have exactly 10 digits
+      const digits = val.replace(/\D/g, '');
+      // Handle +91, 91, +91- prefixes
+      if (digits.startsWith('91') && digits.length === 12) {
+        return true; // 91 + 10 digits
+      }
+      return digits.length === 10; // Just 10 digits
+    }, "Phone number must be 10 digits or +91/91 followed by 10 digits")
+    .transform((val) => {
+      // Normalize to 10 digits by removing country code
+      const digits = val.replace(/\D/g, '');
+      if (digits.startsWith('91') && digits.length === 12) {
+        return digits.slice(2); // Remove 91 prefix
+      }
+      return digits;
+    }),
   category: z.string().default("general"),
   domicileState: z.string().default("uttar-pradesh"),
   counselingType: z.string().default("state"),
@@ -205,12 +221,19 @@ function BAMSContactForm() {
                 <FormControl>
                   <Input 
                     type="tel"
-                    placeholder="Phone Number (10 digits only)" 
+                    placeholder="Phone Number (+91XXXXXXXXXX or XXXXXXXXXX)" 
                     className="bg-white/80 backdrop-blur-sm"
-                    maxLength={10}
+                    maxLength={15}
                     onInput={(e) => {
                       const target = e.target as HTMLInputElement;
-                      target.value = target.value.replace(/[^0-9]/g, '');
+                      let value = target.value;
+                      // Allow +, digits, and - for Indian format
+                      value = value.replace(/[^0-9+\-]/g, '');
+                      // Prevent multiple + signs
+                      if ((value.match(/\+/g) || []).length > 1) {
+                        value = value.replace(/\+(?=.*\+)/g, '');
+                      }
+                      target.value = value;
                     }}
                     {...field} 
                   />
