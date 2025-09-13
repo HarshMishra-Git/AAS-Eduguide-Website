@@ -141,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       try {
-        bamsAdmissions = await sql`SELECT * FROM bams_admissions ORDER BY created_at DESC LIMIT 50`;
+        bamsAdmissions = await sql`SELECT * FROM bams_admissions ORDER BY created_at DESC`;
       } catch (e) {
         console.log('BAMS admissions table not found or empty');
         bamsAdmissions = [];
@@ -273,16 +273,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             </div>
         </div>
         
-        <div class="export-section">
-            <h3 style="margin-bottom: 15px; color: #1a365d;">📊 Export Data</h3>
-            <div class="export-buttons">
-                <button class="btn btn-success" onclick="exportData('leads')">📥 Export Leads</button>
-                <button class="btn btn-success" onclick="exportData('contacts')">📥 Export Contacts</button>
-                <button class="btn btn-success" onclick="exportData('bams_admissions')">📥 Export BAMS</button>
-                <button class="btn btn-success" onclick="exportData('newsletters')">📥 Export Newsletters</button>
-                <button class="btn btn-success" onclick="exportData('blogs')">📥 Export Blogs</button>
-            </div>
-        </div>
+
         
         <div style="text-align: center; margin: 40px 0;">
             <a href="/api/blog-manager" class="btn btn-primary">📝 Manage Blog Posts</a>
